@@ -1,0 +1,49 @@
+name: Sync released main to dev
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Open main to dev synchronization PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require release token
+        env:
+          RELEASE_PLEASE_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          if [ -z "$RELEASE_PLEASE_TOKEN" ]; then
+            echo "RELEASE_PLEASE_TOKEN must be configured" >&2
+            exit 1
+          fi
+
+      - name: Open synchronization pull request
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          existing_pr="$(gh pr list --state open --base dev --head main --json number --jq '.[0].number // empty')"
+
+          if [ -n "$existing_pr" ]; then
+            echo "Synchronization PR #$existing_pr is already open"
+            exit 0
+          fi
+
+          comparison="$(gh api "repos/$GH_REPO/compare/dev...main" --jq '.ahead_by')"
+
+          if [ "$comparison" -eq 0 ]; then
+            echo "dev already contains main"
+            exit 0
+          fi
+
+          gh pr create \
+            --base dev \
+            --head main \
+            --title "chore: sync main after $RELEASE_TAG" \
+            --body "Synchronize release metadata and CHANGELOG.md from $RELEASE_TAG back into dev. Merge this PR with a merge commit."

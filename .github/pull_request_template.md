@@ -1,5 +1,9 @@
 ## Summary
 
+> Temporary PR titles must follow Conventional Commits, for example
+> `feat: add reporting dashboard` or `fix: correct login throttling`.
+> Use `!` or a `BREAKING CHANGE` footer for a major release.
+
 Describe the change and the problem it solves.
 
 ## Target
