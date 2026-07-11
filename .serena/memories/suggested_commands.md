@@ -1,0 +1,13 @@
+# Suggested Commands
+- Initial setup: `composer run setup`.
+- Full local development process: `composer run dev` (delegates to Artisan's dev command).
+- Frontend-only dev server: `pnpm run dev`.
+- Production bundle: `pnpm run build`; SSR bundle: `pnpm run build:ssr`.
+- Focused tests: `php artisan test --compact path/to/Test.php` or `php artisan test --compact --filter=testName`.
+- Full backend quality suite: `composer test`.
+- Aggregated CI checks: `composer run ci:check`.
+- PHP format/fix after PHP edits: `vendor/bin/pint --dirty --format agent`.
+- Frontend fixers: `pnpm run lint`, `pnpm run format`.
+- Frontend checks: `pnpm run lint:check`, `pnpm run format:check`, `pnpm run types:check`.
+- PHP static analysis: `composer run types:check`.
+- Route inspection: `php artisan route:list --except-vendor`; config inspection: `php artisan config:show <key>`.
