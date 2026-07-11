@@ -9,6 +9,7 @@ KEEP_RELEASES="${KEEP_RELEASES:-3}"
 PHP_BIN="${PHP_BIN:-php}"
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
 PNPM_BIN="${PNPM_BIN:-pnpm}"
+PHP_FPM_SERVICE="${PHP_FPM_SERVICE:-}"
 
 RELEASES_DIR="${APP_ROOT}/releases"
 SHARED_DIR="${APP_ROOT}/shared"
@@ -28,15 +29,16 @@ fail() {
 command -v git >/dev/null || fail 'git is required'
 command -v "$PHP_BIN" >/dev/null || fail "${PHP_BIN} is required"
 command -v "$COMPOSER_BIN" >/dev/null || fail "${COMPOSER_BIN} is required"
+command -v node >/dev/null || fail 'node is required'
 command -v "$PNPM_BIN" >/dev/null || fail "${PNPM_BIN} is required"
 
-php_minor="$($PHP_BIN -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
-node_version="$(node -v)"
-pnpm_version="$($PNPM_BIN -v)"
+php_version_id="$($PHP_BIN -r 'echo PHP_VERSION_ID;')"
+node_major="$(node -p 'process.versions.node.split(".")[0]')"
+pnpm_major="$($PNPM_BIN -v | cut -d. -f1)"
 
-[[ "$php_minor" == "8.5" ]] || fail "PHP 8.5.x required, got ${php_minor}"
-[[ "$node_version" == "v24.15.0" ]] || fail "Node v24.15.0 required, got ${node_version}"
-[[ "$pnpm_version" == "11.1.0" ]] || fail "pnpm 11.1.0 required, got ${pnpm_version}"
+(( php_version_id >= 80500 )) || fail "PHP 8.5 or newer required, got $($PHP_BIN -r 'echo PHP_VERSION;')"
+[[ "$node_major" == "24" ]] || fail "Node.js 24.x required, got $(node -v)"
+[[ "$pnpm_major" == "11" ]] || fail "pnpm 11.x required, got $($PNPM_BIN -v)"
 
 mkdir -p "$RELEASES_DIR" "$SHARED_DIR/storage/app/public" "$SHARED_DIR/storage/framework/cache" "$SHARED_DIR/storage/framework/sessions" "$SHARED_DIR/storage/framework/views" "$SHARED_DIR/storage/logs"
 
@@ -72,8 +74,8 @@ mv -Tf "${CURRENT_LINK}.next" "$CURRENT_LINK"
 log 'Restarting long-running processes'
 "$PHP_BIN" "$CURRENT_LINK/artisan" queue:restart --ansi || true
 
-if command -v systemctl >/dev/null; then
-    systemctl reload php8.5-fpm || true
+if [[ -n "$PHP_FPM_SERVICE" ]] && command -v systemctl >/dev/null; then
+    systemctl reload "$PHP_FPM_SERVICE" || true
 fi
 
 log "Removing old releases, keeping ${KEEP_RELEASES}"
