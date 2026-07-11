@@ -45,7 +45,7 @@ jobs:
       - name: Create application from pull request branch
         working-directory: /tmp
         run: |
-          "$HOME/.config/composer/vendor/bin/laravel" new jalara-smoke \
+          laravel new jalara-smoke \
             --using=https://github.com/${{ github.repository }}#${{ github.head_ref }} \
             --pnpm \
             --no-boost \
