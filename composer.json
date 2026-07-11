@@ -13,7 +13,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": ">=8.5",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
@@ -66,13 +66,13 @@
         ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
-            "npm run lint:check",
-            "npm run format:check",
-            "npm run types:check",
+            "pnpm run lint:check",
+            "pnpm run format:check",
+            "pnpm run types:check",
             "@test"
         ],
         "types:check": [
-            "phpstan analyse"
+            "phpstan analyse --memory-limit=512M"
         ],
         "test": [
             "@php artisan config:clear --ansi",
@@ -101,10 +101,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [],
-            "installer": {
-                "post-create-project": []
-            }
+            "dont-discover": []
         }
     },
     "config": {
