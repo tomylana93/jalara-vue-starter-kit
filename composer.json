@@ -1,11 +1,15 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/vue-starter-kit",
+    "name": "tomylana93/jalara-vue-starter-kit",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "A modern Laravel, Inertia, and Vue starter kit built on the Jalara application foundation.",
     "keywords": [
         "laravel",
-        "framework"
+        "vue",
+        "inertia",
+        "starter-kit",
+        "jalara",
+        "modular-monolith"
     ],
     "license": "MIT",
     "require": {
