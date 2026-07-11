@@ -36,16 +36,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24.15.0
-          cache: pnpm
-          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Install Laravel installer
-        run: composer global require laravel/installer --no-interaction --prefer-dist --no-progress
+        run: |
+          composer global require laravel/installer --no-interaction --prefer-dist --no-progress
+          echo "$HOME/.config/composer/vendor/bin" >> "$GITHUB_PATH"
 
       - name: Create application from pull request branch
         working-directory: /tmp
         run: |
-          laravel new jalara-smoke \
+          "$HOME/.config/composer/vendor/bin/laravel" new jalara-smoke \
             --using=https://github.com/${{ github.repository }}#${{ github.head_ref }} \
             --pnpm \
             --no-boost \
