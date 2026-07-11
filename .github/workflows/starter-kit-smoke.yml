@@ -55,5 +55,5 @@ jobs:
         working-directory: /tmp/jalara-smoke
         run: |
           php artisan about --only=environment
-          php artisan test
           pnpm run build
+          php artisan test
