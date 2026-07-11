@@ -13,11 +13,12 @@ function repositoryFile(string $path): string
     return $contents;
 }
 
-test('release please starts from the latest immutable release', function () {
+test('release please tracks a single semantic version for the root package', function () {
     $manifest = json_decode(repositoryFile('.release-please-manifest.json'), true, flags: JSON_THROW_ON_ERROR);
     $configuration = json_decode(repositoryFile('release-please-config.json'), true, flags: JSON_THROW_ON_ERROR);
 
-    expect($manifest)->toBe(['.' => '1.0.1'])
+    expect($manifest)->toHaveKeys(['.'])
+        ->and($manifest['.'])->toMatch('/^\d+\.\d+\.\d+$/')
         ->and($configuration['release-type'])->toBe('php')
         ->and($configuration['include-component-in-tag'])->toBeFalse()
         ->and($configuration['packages']['.']['package-name'])->toBe('jalara-vue-starter-kit');
