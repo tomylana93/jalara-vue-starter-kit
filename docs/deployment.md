@@ -92,6 +92,7 @@ The script accepts environment variables:
 | `PHP_BIN` | `php` | PHP executable |
 | `COMPOSER_BIN` | `composer` | Composer executable |
 | `PNPM_BIN` | `pnpm` | pnpm executable |
+| `PHP_FPM_SERVICE` | empty | Optional systemd service to reload, such as `php8.5-fpm` |
 
 ## Rollback
 
@@ -121,4 +122,10 @@ The script runs `queue:restart`. Configure Supervisor or systemd workers to use:
 /srv/my-app/current/artisan
 ```
 
-The script also attempts to reload `php8.5-fpm` when systemd is available. If the deploy user cannot reload services, configure a narrowly scoped sudo rule or reload PHP-FPM manually after deployment.
+Set `PHP_FPM_SERVICE` when PHP-FPM should be reloaded automatically:
+
+```bash
+PHP_FPM_SERVICE=php8.5-fpm bash scripts/deploy.sh
+```
+
+If the deploy user cannot reload services, configure a narrowly scoped sudo rule or reload PHP-FPM manually after deployment.
