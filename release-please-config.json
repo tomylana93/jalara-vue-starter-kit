@@ -1,0 +1,14 @@
+{
+    "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+    "release-type": "php",
+    "include-component-in-tag": false,
+    "include-v-in-tag": true,
+    "include-v-in-release-name": true,
+    "bootstrap-sha": "8e11a97f73bcbfa02d01ed424da87bc00aeada81",
+    "packages": {
+        ".": {
+            "package-name": "jalara-vue-starter-kit",
+            "changelog-path": "CHANGELOG.md"
+        }
+    }
+}

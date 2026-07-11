@@ -1,9 +1,10 @@
 # Development and Release Workflow
-- Normal path: temporary `feature/*` branch from `dev` -> pull request to `dev` -> squash merge -> promotion pull request `dev` to `main` -> merge commit -> annotated semantic-version tag on `main` -> manual SSH deployment.
-- Direct pushes to permanent branches `dev` and `main` are prohibited; all changes arrive through pull requests.
-- Temporary branch prefixes: `feature/*`, `fix/*`, `refactor/*`, `chore/*`, `docs/*`.
-- Promotion PRs contain no release-only edits; required edits must first enter `dev`.
-- Hotfix path: branch `hotfix/*` from `main`, squash PR into `main`, then merge-commit PR from `main` back to `dev`.
+- Normal path: temporary branch from `dev` -> squash PR into `dev` -> promotion merge-commit PR `dev` to `main` -> Release Please PR into `main` -> automated immutable semantic tag and GitHub Release -> merge-commit sync PR `main` to `dev`.
+- Temporary PR titles follow Conventional Commits; `feat` bumps minor, `fix` bumps patch, and `!`/`BREAKING CHANGE` bumps major.
+- Release Please owns `CHANGELOG.md`, version metadata, tag creation, and GitHub Release publication; do not create these manually.
+- Release automation requires repository secret `RELEASE_PLEASE_TOKEN`; never write its value to files or logs.
+- Direct pushes to `dev` and `main` remain prohibited. Release and sync PRs must pass branch protection.
 - Published `v*` tags are immutable; correct a bad release with a new patch version.
-- `dev` requires Quality checks and linear history; `main` additionally requires Fresh installation.
+- Hotfixes still flow `main -> hotfix/* -> main`, then synchronize `main -> dev`.
+- `dev` requires Quality checks, Conventional Commit PR title validation, and linear history; `main` additionally requires Fresh installation.
 - Canonical details: docs/development-workflow.md.
