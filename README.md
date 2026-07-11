@@ -6,15 +6,14 @@ Jalara provides a structured application foundation intended for projects that v
 
 ## Runtime
 
-The supported toolchain is intentionally pinned:
+The supported toolchain uses minimum or major-version constraints rather than exact patch locks:
 
-- PHP 8.5.x
-- Node.js 24.15.0
-- npm 11.17.0
-- pnpm 11.1.0
+- PHP 8.5 or newer
+- Node.js 24.x
+- pnpm 11.x
 - Composer 2
 
-Version files are included for Node, npm, and pnpm. Verify the local environment with:
+Version files are included for the preferred local Node and PHP versions. Verify the local environment with:
 
 ```bash
 bash scripts/check-runtime.sh
