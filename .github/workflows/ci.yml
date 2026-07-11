@@ -61,6 +61,7 @@ jobs:
           touch database/database.sqlite
           php artisan key:generate --ansi
           php artisan migrate --force --ansi
+          php artisan wayfinder:generate --with-form --ansi
 
       - name: Validate Composer metadata
         run: composer validate --strict --no-check-lock
