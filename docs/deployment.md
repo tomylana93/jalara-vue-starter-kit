@@ -23,11 +23,10 @@ The deployment script keeps the newest three releases by default.
 
 The production server must provide:
 
-- PHP 8.5.x;
+- PHP 8.5 or newer;
 - Composer 2;
-- Node.js 24.15.0;
-- npm 11.17.0;
-- pnpm 11.1.0;
+- Node.js 24.x;
+- pnpm 11.x;
 - Git;
 - access to the source repository through SSH.
 
