@@ -1,0 +1,10 @@
+# Project Core
+- Jalara Vue Starter Kit: Laravel/Inertia/Vue application foundation with authentication and settings already wired.
+- Backend source map and Laravel-specific invariants: `mem:backend/core`.
+- Frontend source map and Inertia/Vue/Wayfinder invariants: `mem:frontend/core`.
+- Runtime and package version constraints: `mem:tech_stack`.
+- Repository-specific code and style rules: `mem:conventions`.
+- Common setup, development, and quality commands: `mem:suggested_commands`.
+- Required completion checks for code changes: `mem:task_completion`.
+- Branch, PR merge, hotfix, and immutable release-tag policy: `mem:development_workflow`.
+- Do not add dependencies or new base directories without approval; do not create documentation unless explicitly requested.
