@@ -73,10 +73,10 @@ GitHub Actions runs one required quality job for pull requests into `dev` and `m
 All changes to permanent branches must use pull requests:
 
 ```text
-feature/* -> dev -> main -> version tag -> manual SSH deployment
+feature/* -> dev -> main -> Release Please PR -> version tag -> GitHub Release -> main/dev sync
 ```
 
-See [`docs/development-workflow.md`](docs/development-workflow.md) for branch rules, merge strategy, hotfix handling, releases, and recommended GitHub rulesets.
+See [`docs/development-workflow.md`](docs/development-workflow.md) for Conventional Commit title requirements, Release Please setup, branch rules, merge strategy, hotfix handling, and recommended GitHub rulesets.
 
 ## Manual deployment
 

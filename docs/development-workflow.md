@@ -35,18 +35,27 @@ chore/update-dependencies
 ## Normal flow
 
 ```text
-feature/* -> dev -> main -> version tag -> manual SSH deployment
+feature/* -> dev -> main -> Release Please PR -> version tag -> GitHub Release
+                                  |
+                                  v
+                             main -> dev
 ```
 
 1. Create a temporary branch from `dev`.
-2. Open a pull request into `dev`.
+2. Open a pull request into `dev` with a Conventional Commit title.
 3. Merge with squash merge after the required CI check passes.
 4. When `dev` is ready for release, open a promotion pull request from `dev` into `main`.
 5. Merge the promotion pull request with a merge commit.
-6. Create an immutable semantic version tag from `main`.
-7. Deploy the tag or `main` manually through SSH.
+6. Merge the Release Please PR after reviewing its generated changelog and version.
+7. Release Please creates the immutable semantic version tag and publishes the GitHub Release.
+8. Merge the automated synchronization pull request from `main` back into `dev` with a merge commit.
+9. Deploy the tag or `main` manually through SSH.
 
-Promotion pull requests must not contain release-only edits. Any required change should first be merged into `dev`.
+Temporary pull requests use Conventional Commit titles. Release Please reads the squash commit produced from those titles: `feat` bumps minor, `fix` bumps patch, and `!` or a `BREAKING CHANGE` footer bumps major.
+
+After a promotion pull request is merged, Release Please opens or updates a release pull request against `main`. Merging the release pull request updates `CHANGELOG.md`, creates the tag, and publishes the GitHub Release. The published-release workflow then opens a `main` to `dev` synchronization pull request.
+
+Promotion pull requests must not contain release-only edits. Release Please owns the release-only changelog and version metadata changes on `main`, then synchronizes them back into `dev`.
 
 ## Hotfix flow
 
@@ -73,16 +82,11 @@ This prevents a future `dev` promotion from reintroducing the corrected defect.
 
 ## Release tags
 
-Use semantic version tags:
-
-```bash
-git switch main
-git pull --ff-only
-git tag -a v0.1.0 -m "Jalara Vue Starter Kit v0.1.0"
-git push origin v0.1.0
-```
+Release Please creates semantic version tags and GitHub Releases when its release pull request is merged. Do not create routine release tags manually.
 
 Published tags must never be moved or deleted. Create a new patch version when a release is incorrect.
+
+Repository administrators must configure `RELEASE_PLEASE_TOKEN` with contents and pull-request write access. Never store the token in the repository.
 
 ## Recommended GitHub rulesets
 
@@ -90,6 +94,7 @@ Apply the following rules to `dev` and `main`:
 
 - require a pull request before merging;
 - require the `Quality checks` status check;
+- require the `Validate PR title` status check on temporary pull requests into `dev`;
 - require conversation resolution;
 - block force pushes;
 - block branch deletion;
