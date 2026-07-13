@@ -22,6 +22,8 @@ final class AuthorizationCatalog
     /** @return list<Permission> */
     public function permissionsFor(Role $role): array
     {
-        return [];
+        return match ($role) {
+            default => [],
+        };
     }
 }

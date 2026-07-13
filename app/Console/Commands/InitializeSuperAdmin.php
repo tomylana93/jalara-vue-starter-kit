@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 use Spatie\Permission\Models\Role as PermissionRole;
 
 #[Signature('auth:init-superadmin {--reset-password}')]
@@ -34,7 +34,7 @@ class InitializeSuperAdmin extends Command
         }
 
         if (empty($password) && ! app()->environment(['local', 'testing'])) {
-            $this->components->error('SUPERADMIN_PASSWORD must be set in this environment before the Super Admin can be initialized.');
+            $this->components->error('SUPER_ADMIN_PASSWORD must be set in this environment before the Super Admin can be initialized.');
 
             return self::FAILURE;
         }
@@ -56,19 +56,21 @@ class InitializeSuperAdmin extends Command
         $user->status = $status instanceof UserStatus ? $status : UserStatus::from($status);
         $user->is_system = true;
 
-        if ($emailVerified && $user->email_verified_at === null) {
-            $user->email_verified_at = Carbon::now();
+        if ($emailVerified) {
+            $user->email_verified_at ??= Date::now();
+        } else {
+            $user->email_verified_at = null;
         }
 
         if ($isNewUser || $this->option('reset-password')) {
             $user->password = $password;
         }
 
-        $user->save();
+        $user->saveQuietly();
 
         PermissionRole::findOrCreate(Role::SuperAdmin->value);
 
-        $user->applySystemRole(Role::SuperAdmin);
+        $user->enforceSuperAdminRole();
 
         $this->components->info("Super Admin initialized for [{$user->email}].");
 

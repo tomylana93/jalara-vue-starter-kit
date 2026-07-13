@@ -6,11 +6,13 @@ namespace App\Models;
 use App\Enums\Role;
 use App\Enums\UserStatus;
 use BackedEnum;
+use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -20,28 +22,29 @@ use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use LogicException;
+use Spatie\Permission\Models\Role as PermissionRole;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property string $id
  * @property string $name
  * @property string $email
- * @property Carbon|null $email_verified_at
+ * @property Carbon|CarbonImmutable|null $email_verified_at
  * @property string|null $phone
  * @property UserStatus $status
  * @property bool $is_system
  * @property string $password
  * @property bool $must_change_password
- * @property Carbon|null $last_login_at
+ * @property Carbon|CarbonImmutable|null $last_login_at
  * @property int $failed_login_attempts
- * @property Carbon|null $suspended_until
+ * @property Carbon|CarbonImmutable|null $suspended_until
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
- * @property Carbon|null $two_factor_confirmed_at
+ * @property Carbon|CarbonImmutable|null $two_factor_confirmed_at
  * @property string|null $remember_token
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
+ * @property Carbon|CarbonImmutable|null $created_at
+ * @property Carbon|CarbonImmutable|null $updated_at
+ * @property Carbon|CarbonImmutable|null $deleted_at
  */
 #[Fillable(['name', 'email', 'phone', 'status', 'password', 'must_change_password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
@@ -54,6 +57,7 @@ class User extends Authenticatable implements PasskeyUser
         assignRole as protected spatieAssignRole;
         removeRole as protected spatieRemoveRole;
         syncRoles as protected spatieSyncRoles;
+        roles as protected spatieRoles;
     }
 
     /**
@@ -68,6 +72,10 @@ class User extends Authenticatable implements PasskeyUser
     {
         static::deleting(function (User $user): void {
             throw_if($user->isSystem(), LogicException::class, 'System users cannot be deleted.');
+        });
+
+        static::updating(function (User $user): void {
+            throw_if($user->isDirty('is_system'), LogicException::class, 'The system status of a user cannot be changed directly.');
         });
     }
 
@@ -84,7 +92,7 @@ class User extends Authenticatable implements PasskeyUser
      *
      * @param  string|int|array<array-key, mixed>|\Spatie\Permission\Contracts\Role|Collection<array-key, mixed>|BackedEnum  ...$roles
      */
-    public function assignRole(...$roles): static
+    public function assignRole(mixed ...$roles): static
     {
         $this->guardSystemRoleMutation();
 
@@ -96,7 +104,7 @@ class User extends Authenticatable implements PasskeyUser
      *
      * @param  string|int|array<array-key, mixed>|\Spatie\Permission\Contracts\Role|Collection<array-key, mixed>|BackedEnum  ...$role
      */
-    public function removeRole(...$role): static
+    public function removeRole(mixed ...$role): static
     {
         $this->guardSystemRoleMutation();
 
@@ -108,7 +116,7 @@ class User extends Authenticatable implements PasskeyUser
      *
      * @param  string|int|array<array-key, mixed>|\Spatie\Permission\Contracts\Role|Collection<array-key, mixed>|BackedEnum  ...$roles
      */
-    public function syncRoles(...$roles): static
+    public function syncRoles(mixed ...$roles): static
     {
         $this->guardSystemRoleMutation();
 
@@ -116,17 +124,19 @@ class User extends Authenticatable implements PasskeyUser
     }
 
     /**
-     * Apply the system role to this user, bypassing the public mutation guard.
+     * Enforce the Super Admin role for this system user, bypassing the public mutation guard.
      *
      * This is the only sanctioned way to change a system user's roles, intended
      * for use by the Super Admin initializer.
      */
-    public function applySystemRole(Role $role): void
+    public function enforceSuperAdminRole(): void
     {
+        throw_unless($this->isSystem(), LogicException::class, 'Only system users can enforce the Super Admin role.');
+
         $this->bypassSystemRoleGuard = true;
 
         try {
-            $this->spatieSyncRoles($role);
+            $this->spatieSyncRoles(Role::SuperAdmin);
         } finally {
             $this->bypassSystemRoleGuard = false;
         }
@@ -135,9 +145,21 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Guard against role mutation on a protected system user.
      */
-    private function guardSystemRoleMutation(): void
+    public function guardSystemRoleMutation(): void
     {
         throw_if($this->isSystem() && ! $this->bypassSystemRoleGuard, LogicException::class, 'Roles for system users cannot be changed directly.');
+    }
+
+    /**
+     * Get the roles relationship, guarded against unauthorized mutations.
+     *
+     * @return GuardedSystemRoleMorphToMany
+     */
+    public function roles(): MorphToMany
+    {
+        $relation = $this->spatieRoles();
+
+        return new GuardedSystemRoleMorphToMany(PermissionRole::query(), $this, 'model', $relation->getTable(), $relation->getForeignPivotKeyName(), $relation->getRelatedPivotKeyName(), $relation->getParentKeyName(), $relation->getRelatedKeyName(), $relation->getRelationName(), false);
     }
 
     /**

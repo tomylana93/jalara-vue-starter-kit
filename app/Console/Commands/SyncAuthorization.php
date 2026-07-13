@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Authorization\AuthorizationCatalog;
+use App\Enums\Role;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -23,7 +24,7 @@ class SyncAuthorization extends Command
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $declaredRoleNames = collect($catalog->roles())->map(fn ($role) => $role->value)->all();
+        $declaredRoleNames = collect($catalog->roles())->map(fn (Role $role) => $role->value)->all();
 
         $declaredPermissionNames = $this->permissionNames($catalog->permissions());
 
@@ -44,9 +45,19 @@ class SyncAuthorization extends Command
 
             foreach ($catalog->roles() as $role) {
                 $permissionsForRole = $this->permissionNames($catalog->permissionsFor($role));
+                $existingPermissionNames = PermissionRole::query()->where('name', $role->value)->first()?->permissions()->pluck('name')->all() ?? [];
+
+                $permissionsToAttach = array_values(array_diff($permissionsForRole, $existingPermissionNames));
+                $permissionsToDetach = array_values(array_diff($existingPermissionNames, $permissionsForRole));
+
                 $this->components->twoColumnDetail(
-                    "Permissions for role [{$role->value}]",
-                    $permissionsForRole === [] ? 'none' : implode(', ', $permissionsForRole)
+                    "Permissions to attach to [{$role->value}]",
+                    $permissionsToAttach === [] ? 'none' : implode(', ', $permissionsToAttach)
+                );
+
+                $this->components->twoColumnDetail(
+                    "Permissions to detach from [{$role->value}]",
+                    $permissionsToDetach === [] ? 'none' : implode(', ', $permissionsToDetach)
                 );
             }
 

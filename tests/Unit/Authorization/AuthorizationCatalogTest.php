@@ -8,7 +8,8 @@ test('the initial catalog declares only the super admin role', function () {
 
     expect($catalog->roles())->toBe([Role::SuperAdmin])
         ->and($catalog->permissions())->toBe([])
-        ->and($catalog->permissionsFor(Role::SuperAdmin))->toBe([]);
+        ->and($catalog->permissionsFor(Role::SuperAdmin))->toBe([])
+        ->and(new ReflectionMethod($catalog, 'permissionsFor')->getParameters())->toHaveCount(1);
 });
 
 test('the testing super admin password defaults to password', function () {

@@ -24,6 +24,6 @@ return [
 
     'email_verified' => env('SUPERADMIN_EMAIL_VERIFIED', true),
 
-    'password' => env('SUPERADMIN_PASSWORD') ?? (in_array(env('APP_ENV'), ['local', 'testing'], true) ? 'password' : null),
+    'password' => env('SUPER_ADMIN_PASSWORD') ?? (in_array(env('APP_ENV'), ['local', 'testing'], true) ? 'password' : null),
 
 ];
