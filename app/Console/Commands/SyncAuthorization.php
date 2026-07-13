@@ -24,10 +24,11 @@ class SyncAuthorization extends Command
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $declaredRoleNames = collect($catalog->roles())->map(fn ($role) => $role->value)->all();
-        $declaredPermissionNames = collect($catalog->permissions())->map(fn ($permission) => $permission->value)->all();
 
-        $existingRoleNames = PermissionRole::pluck('name')->all();
-        $existingPermissionNames = Permission::pluck('name')->all();
+        $declaredPermissionNames = $this->permissionNames($catalog->permissions());
+
+        $existingRoleNames = PermissionRole::query()->pluck('name')->all();
+        $existingPermissionNames = Permission::query()->pluck('name')->all();
 
         $rolesToCreate = array_values(array_diff($declaredRoleNames, $existingRoleNames));
         $permissionsToCreate = array_values(array_diff($declaredPermissionNames, $existingPermissionNames));
@@ -42,7 +43,7 @@ class SyncAuthorization extends Command
             $this->components->twoColumnDetail('Permissions to delete', $permissionsToDelete === [] ? 'none' : implode(', ', $permissionsToDelete));
 
             foreach ($catalog->roles() as $role) {
-                $permissionsForRole = collect($catalog->permissionsFor($role))->map(fn ($permission) => $permission->value)->all();
+                $permissionsForRole = $this->permissionNames($catalog->permissionsFor($role));
                 $this->components->twoColumnDetail(
                     "Permissions for role [{$role->value}]",
                     $permissionsForRole === [] ? 'none' : implode(', ', $permissionsForRole)
@@ -59,18 +60,16 @@ class SyncAuthorization extends Command
         foreach ($catalog->roles() as $role) {
             $permissionRole = PermissionRole::findOrCreate($role->value);
 
-            $permissionsForRole = collect($catalog->permissionsFor($role))
-                ->map(fn ($permission) => $permission->value)
-                ->all();
+            $permissionsForRole = $this->permissionNames($catalog->permissionsFor($role));
 
             $permissionRole->syncPermissions($permissionsForRole);
         }
 
-        PermissionRole::whereNotIn('name', $declaredRoleNames)->get()->each(
+        PermissionRole::query()->whereNotIn('name', $declaredRoleNames)->get()->each(
             fn (PermissionRole $role) => $role->delete()
         );
 
-        Permission::whereNotIn('name', $declaredPermissionNames)->get()->each(
+        Permission::query()->whereNotIn('name', $declaredPermissionNames)->get()->each(
             fn (Permission $permission) => $permission->delete()
         );
 
@@ -79,5 +78,22 @@ class SyncAuthorization extends Command
         $this->components->info('Authorization catalog synchronized.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Extract the string values of the given permissions.
+     *
+     * @param  list<\App\Enums\Permission>  $permissions
+     * @return list<string>
+     */
+    private function permissionNames(array $permissions): array
+    {
+        $names = [];
+
+        foreach ($permissions as $permission) {
+            $names[] = $permission->value;
+        }
+
+        return $names;
     }
 }

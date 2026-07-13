@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Role;
 use App\Enums\UserStatus;
+use BackedEnum;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -14,9 +15,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use LogicException;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -64,9 +67,7 @@ class User extends Authenticatable implements PasskeyUser
     protected static function booted(): void
     {
         static::deleting(function (User $user): void {
-            if ($user->isSystem()) {
-                throw new \LogicException('System users cannot be deleted.');
-            }
+            throw_if($user->isSystem(), LogicException::class, 'System users cannot be deleted.');
         });
     }
 
@@ -80,6 +81,8 @@ class User extends Authenticatable implements PasskeyUser
 
     /**
      * Assign the given role(s) to the user, rejecting mutation for system users.
+     *
+     * @param  string|int|array<array-key, mixed>|\Spatie\Permission\Contracts\Role|Collection<array-key, mixed>|BackedEnum  ...$roles
      */
     public function assignRole(...$roles): static
     {
@@ -90,6 +93,8 @@ class User extends Authenticatable implements PasskeyUser
 
     /**
      * Remove the given role(s) from the user, rejecting mutation for system users.
+     *
+     * @param  string|int|array<array-key, mixed>|\Spatie\Permission\Contracts\Role|Collection<array-key, mixed>|BackedEnum  ...$role
      */
     public function removeRole(...$role): static
     {
@@ -100,6 +105,8 @@ class User extends Authenticatable implements PasskeyUser
 
     /**
      * Sync the given role(s) on the user, rejecting mutation for system users.
+     *
+     * @param  string|int|array<array-key, mixed>|\Spatie\Permission\Contracts\Role|Collection<array-key, mixed>|BackedEnum  ...$roles
      */
     public function syncRoles(...$roles): static
     {
@@ -130,9 +137,7 @@ class User extends Authenticatable implements PasskeyUser
      */
     private function guardSystemRoleMutation(): void
     {
-        if ($this->isSystem() && ! $this->bypassSystemRoleGuard) {
-            throw new \LogicException('Roles for system users cannot be changed directly.');
-        }
+        throw_if($this->isSystem() && ! $this->bypassSystemRoleGuard, LogicException::class, 'Roles for system users cannot be changed directly.');
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Role as PermissionRole;
 
 #[Signature('auth:init-superadmin {--reset-password}')]
@@ -56,7 +57,7 @@ class InitializeSuperAdmin extends Command
         $user->is_system = true;
 
         if ($emailVerified && $user->email_verified_at === null) {
-            $user->email_verified_at = now();
+            $user->email_verified_at = Carbon::now();
         }
 
         if ($isNewUser || $this->option('reset-password')) {
