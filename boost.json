@@ -8,7 +8,8 @@
     "mcp": true,
     "nightwatch": false,
     "packages": [
-        "fruitcake/laravel-debugbar"
+        "fruitcake/laravel-debugbar",
+        "spatie/laravel-permission"
     ],
     "sail": false,
     "skills": [
@@ -18,6 +19,7 @@
         "pest-testing",
         "inertia-vue-development",
         "tailwindcss-development",
+        "laravel-permission-development",
         "debug-using-debugbar",
         "deploying-laravel-cloud"
     ]
