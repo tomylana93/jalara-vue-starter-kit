@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Role;
 use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -44,7 +45,95 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, HasUuids, Notifiable, PasskeyAuthenticatable, SoftDeletes, TwoFactorAuthenticatable;
+    use HasFactory, HasUuids, Notifiable, PasskeyAuthenticatable, SoftDeletes, TwoFactorAuthenticatable;
+
+    use HasRoles {
+        assignRole as protected spatieAssignRole;
+        removeRole as protected spatieRemoveRole;
+        syncRoles as protected spatieSyncRoles;
+    }
+
+    /**
+     * Whether the system role-mutation guard is temporarily bypassed.
+     */
+    private bool $bypassSystemRoleGuard = false;
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user): void {
+            if ($user->isSystem()) {
+                throw new \LogicException('System users cannot be deleted.');
+            }
+        });
+    }
+
+    /**
+     * Determine whether this user is a protected system user.
+     */
+    public function isSystem(): bool
+    {
+        return $this->is_system === true;
+    }
+
+    /**
+     * Assign the given role(s) to the user, rejecting mutation for system users.
+     */
+    public function assignRole(...$roles): static
+    {
+        $this->guardSystemRoleMutation();
+
+        return $this->spatieAssignRole(...$roles);
+    }
+
+    /**
+     * Remove the given role(s) from the user, rejecting mutation for system users.
+     */
+    public function removeRole(...$role): static
+    {
+        $this->guardSystemRoleMutation();
+
+        return $this->spatieRemoveRole(...$role);
+    }
+
+    /**
+     * Sync the given role(s) on the user, rejecting mutation for system users.
+     */
+    public function syncRoles(...$roles): static
+    {
+        $this->guardSystemRoleMutation();
+
+        return $this->spatieSyncRoles(...$roles);
+    }
+
+    /**
+     * Apply the system role to this user, bypassing the public mutation guard.
+     *
+     * This is the only sanctioned way to change a system user's roles, intended
+     * for use by the Super Admin initializer.
+     */
+    public function applySystemRole(Role $role): void
+    {
+        $this->bypassSystemRoleGuard = true;
+
+        try {
+            $this->spatieSyncRoles($role);
+        } finally {
+            $this->bypassSystemRoleGuard = false;
+        }
+    }
+
+    /**
+     * Guard against role mutation on a protected system user.
+     */
+    private function guardSystemRoleMutation(): void
+    {
+        if ($this->isSystem() && ! $this->bypassSystemRoleGuard) {
+            throw new \LogicException('Roles for system users cannot be changed directly.');
+        }
+    }
 
     /**
      * Get the attributes that should be cast.
