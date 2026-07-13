@@ -4,5 +4,5 @@ namespace App\Enums;
 
 enum Permission: string
 {
-    //
+    case ManageSettings = 'manage settings';
 }

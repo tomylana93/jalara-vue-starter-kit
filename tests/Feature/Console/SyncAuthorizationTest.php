@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Permission as PermissionEnum;
 use App\Enums\Role;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role as PermissionRole;
@@ -13,6 +14,12 @@ test('the authorization sync creates declared roles and prunes undeclared entrie
     expect(PermissionRole::findByName(Role::SuperAdmin->value))->not->toBeNull()
         ->and(PermissionRole::query()->where('name', 'obsolete-role')->exists())->toBeFalse()
         ->and(Permission::query()->where('name', 'obsolete.permission')->exists())->toBeFalse();
+});
+
+test('the super admin role owns the manage settings permission', function () {
+    $this->artisan('auth:sync-authorization')->assertSuccessful();
+
+    expect(PermissionRole::findByName(Role::SuperAdmin->value)->hasPermissionTo(PermissionEnum::ManageSettings->value))->toBeTrue();
 });
 
 test('the authorization sync dry run does not mutate records', function () {

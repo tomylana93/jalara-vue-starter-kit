@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Permission;
 use App\Settings\GeneralSettings;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -46,6 +47,9 @@ class HandleInertiaRequests extends Middleware
                 'user' => fn () => $user === null ? null : [
                     ...$user->toArray(),
                     'avatar' => $user->avatarUrl(),
+                ],
+                'abilities' => [
+                    'manage_settings' => $user?->can(Permission::ManageSettings->value) ?? false,
                 ],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

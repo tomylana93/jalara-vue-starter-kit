@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Enums\Role;
 use App\Models\User;
+use App\Policies\GeneralSettingsPolicy;
+use App\Settings\GeneralSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +59,8 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureAuthorization(): void
     {
+        Gate::policy(GeneralSettings::class, GeneralSettingsPolicy::class);
+
         Gate::before(function (?User $user): ?bool {
             if ($user?->isSystem() && $user->hasRole(Role::SuperAdmin)) {
                 return true;

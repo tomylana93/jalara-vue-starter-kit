@@ -16,13 +16,14 @@ final class AuthorizationCatalog
     /** @return list<Permission> */
     public function permissions(): array
     {
-        return [];
+        return [Permission::ManageSettings];
     }
 
     /** @return list<Permission> */
     public function permissionsFor(Role $role): array
     {
         return match ($role) {
+            Role::SuperAdmin => [Permission::ManageSettings],
             default => [],
         };
     }
