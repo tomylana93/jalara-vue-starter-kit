@@ -1,17 +1,21 @@
-import { createInertiaApp } from '@inertiajs/vue3';
+import { createInertiaApp, router } from '@inertiajs/vue3';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
-function resolveAppName(): string {
+function toAppName(value: unknown): string | null {
+    return typeof value === 'string' && value !== '' ? value : null;
+}
+
+function resolveInitialAppName(): string {
     const dataPage = document.getElementById('app')?.getAttribute('data-page');
 
     if (dataPage) {
         try {
-            const name = JSON.parse(dataPage)?.props?.name;
+            const name = toAppName(JSON.parse(dataPage)?.props?.name);
 
-            if (typeof name === 'string' && name !== '') {
+            if (name !== null) {
                 return name;
             }
         } catch {
@@ -22,7 +26,13 @@ function resolveAppName(): string {
     return import.meta.env.VITE_APP_NAME || 'Laravel';
 }
 
-const appName = resolveAppName();
+// Track the shared site name so the document title stays in sync when it
+// changes via an Inertia visit (e.g. after updating General Settings).
+let appName = resolveInitialAppName();
+
+router.on('success', (event) => {
+    appName = toAppName(event.detail.page.props.name) ?? appName;
+});
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

@@ -24,7 +24,6 @@ final class AuthorizationCatalog
     {
         return match ($role) {
             Role::SuperAdmin => [Permission::ManageSettings],
-            default => [],
         };
     }
 }
