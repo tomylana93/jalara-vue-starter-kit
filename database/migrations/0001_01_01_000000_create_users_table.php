@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('password');
             $table->boolean('must_change_password')->default(false);
             $table->timestamp('last_login_at')->nullable();
+            $table->unsignedInteger('failed_login_attempts')->default(0);
+            $table->timestamp('suspended_until')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

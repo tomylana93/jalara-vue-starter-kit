@@ -32,3 +32,14 @@ test('users cast new attributes', function () {
         ->and($user->must_change_password)->toBeTrue()
         ->and($user->last_login_at)->toBeInstanceOf(CarbonImmutable::class);
 });
+
+test('users cast the login-security attributes', function () {
+    $user = User::factory()->create([
+        'failed_login_attempts' => '3',
+        'suspended_until' => now(),
+    ]);
+
+    expect($user->failed_login_attempts)->toBeInt()
+        ->and($user->failed_login_attempts)->toBe(3)
+        ->and($user->suspended_until)->toBeInstanceOf(CarbonImmutable::class);
+});

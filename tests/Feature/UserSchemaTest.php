@@ -18,3 +18,9 @@ test('users contain the new domain columns', function () {
         'phone', 'status', 'must_change_password', 'last_login_at', 'deleted_at',
     ]))->toBeTrue();
 });
+
+test('users contain the login-security columns', function () {
+    expect(Schema::hasColumns('users', [
+        'failed_login_attempts', 'suspended_until',
+    ]))->toBeTrue();
+});

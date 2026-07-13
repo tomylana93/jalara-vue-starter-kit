@@ -27,6 +27,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $password
  * @property bool $must_change_password
  * @property Carbon|null $last_login_at
+ * @property int $failed_login_attempts
+ * @property Carbon|null $suspended_until
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -55,6 +57,8 @@ class User extends Authenticatable implements PasskeyUser
             'password' => 'hashed',
             'must_change_password' => 'boolean',
             'last_login_at' => 'datetime',
+            'failed_login_attempts' => 'integer',
+            'suspended_until' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];

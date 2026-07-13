@@ -34,6 +34,8 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'must_change_password' => false,
             'last_login_at' => null,
+            'failed_login_attempts' => 0,
+            'suspended_until' => null,
             'remember_token' => Str::random(10),
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,

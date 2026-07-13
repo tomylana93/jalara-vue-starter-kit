@@ -259,7 +259,7 @@ test('stale failed login does not overwrite an administrator disable', function 
         if (! $changed && $retrieved->is($user)) {
             $changed = true;
 
-            User::withoutEvents(fn () => User::whereKey($user)->update([
+            User::withoutEvents(fn () => User::query()->whereKey($user)->update([
                 'status' => UserStatus::Disable,
             ]));
         }
