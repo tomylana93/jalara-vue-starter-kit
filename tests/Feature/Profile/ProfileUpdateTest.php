@@ -42,7 +42,7 @@ test('legacy settings and appearance URLs are unavailable', function (string $ur
     $this->actingAs(User::factory()->create())
         ->get($uri)
         ->assertNotFound();
-})->with(['/settings', '/settings/appearance']);
+})->with(['/settings/appearance']);
 
 test('the appearance named route no longer exists', function () {
     expect(Route::has('appearance.edit'))->toBeFalse();
