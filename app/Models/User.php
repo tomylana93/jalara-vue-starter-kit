@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Role;
 use App\Enums\UserStatus;
+use App\Support\MediaDisk;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
@@ -22,6 +23,10 @@ use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use LogicException;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Models\Role as PermissionRole;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -48,10 +53,10 @@ use Spatie\Permission\Traits\HasRoles;
  */
 #[Fillable(['name', 'email', 'phone', 'status', 'password', 'must_change_password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-class User extends Authenticatable implements PasskeyUser
+class User extends Authenticatable implements HasMedia, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasUuids, Notifiable, PasskeyAuthenticatable, SoftDeletes, TwoFactorAuthenticatable;
+    use HasFactory, HasUuids, InteractsWithMedia, Notifiable, PasskeyAuthenticatable, SoftDeletes, TwoFactorAuthenticatable;
 
     use HasRoles {
         assignRole as protected spatieAssignRole;
@@ -160,6 +165,30 @@ class User extends Authenticatable implements PasskeyUser
         $relation = $this->spatieRoles();
 
         return new GuardedSystemRoleMorphToMany(PermissionRole::query(), $this, 'model', $relation->getTable(), $relation->getForeignPivotKeyName(), $relation->getRelatedPivotKeyName(), $relation->getParentKeyName(), $relation->getRelatedKeyName(), $relation->getRelationName(), false);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')
+            ->singleFile()
+            ->useDisk(MediaDisk::avatar())
+            ->acceptsMimeTypes(['image/jpeg', 'image/webp']);
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('avatar')
+            ->format('webp')
+            ->fit(Fit::Crop, 256, 256)
+            ->performOnCollections('avatar')
+            ->nonQueued();
+    }
+
+    public function avatarUrl(): ?string
+    {
+        $url = $this->getFirstMediaUrl('avatar', 'avatar');
+
+        return $url === '' ? null : $url;
     }
 
     /**
