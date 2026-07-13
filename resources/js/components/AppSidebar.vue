@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from '@lucide/vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, FolderGit2, LayoutGrid, Settings } from '@lucide/vue';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -14,16 +15,33 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useTrans } from '@/composables/useTrans';
 import { dashboard } from '@/routes';
+import { index as settingsIndex } from '@/routes/settings';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
+const page = usePage();
+const { trans } = useTrans();
+
+const mainNavItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+    ];
+
+    if (page.props.auth.abilities.manage_settings) {
+        items.push({
+            title: trans('settings.sidebar'),
+            href: settingsIndex(),
+            icon: Settings,
+        });
+    }
+
+    return items;
+});
 
 const footerNavItems: NavItem[] = [
     {
