@@ -21,7 +21,8 @@
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
         "spatie/laravel-medialibrary": "^11.23",
-        "spatie/laravel-permission": "^8.3"
+        "spatie/laravel-permission": "^8.3",
+        "spatie/laravel-settings": "^3.9"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.5",
