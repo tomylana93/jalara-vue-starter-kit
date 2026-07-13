@@ -17,7 +17,9 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return $this->profileRules($this->user()->id);
+        return array_merge($this->profileRules($this->user()->id), [
+            'temporary_avatar_upload_id' => ['nullable', 'uuid'],
+        ]);
     }
 
     /**
@@ -32,5 +34,13 @@ class ProfileUpdateRequest extends FormRequest
             'email' => $this->string('email')->toString(),
             'phone' => $this->filled('phone') ? $this->string('phone')->toString() : null,
         ];
+    }
+
+    /**
+     * Get the validated temporary avatar upload ID.
+     */
+    public function temporaryAvatarUploadId(): ?string
+    {
+        return $this->validated()['temporary_avatar_upload_id'] ?? null;
     }
 }
