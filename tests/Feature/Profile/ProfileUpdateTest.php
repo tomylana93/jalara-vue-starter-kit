@@ -20,15 +20,21 @@ test('profile page is displayed', function () {
 
     $response = $this
         ->actingAs($user)
-        ->get(route('profile.edit'));
+        ->get('/profile');
 
     $response->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/Profile')
+            ->component('Profile')
             ->where('auth.user.name', $user->name)
             ->where('auth.user.email', $user->email)
             ->where('auth.user.phone', '+628111111111')
         );
+});
+
+test('legacy settings profile URL is unavailable', function () {
+    $this->actingAs(User::factory()->create())
+        ->get('/settings/profile')
+        ->assertNotFound();
 });
 
 test('profile information can be updated', function () {

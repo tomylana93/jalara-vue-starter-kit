@@ -20,14 +20,20 @@ test('security page is displayed', function () {
 
     $this->actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('security.edit'))
+        ->get('/security')
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/Security')
+            ->component('Security')
             ->where('canManagePasskeys', true)
             ->where('passkeys', [])
             ->where('canManageTwoFactor', true)
             ->where('twoFactorEnabled', false),
         );
+});
+
+test('legacy settings security URL is unavailable', function () {
+    $this->actingAs(User::factory()->create())
+        ->get('/settings/security')
+        ->assertNotFound();
 });
 
 test('security page requires password confirmation when enabled', function () {
@@ -58,7 +64,7 @@ test('security page renders without two factor when feature is disabled', functi
         ->get(route('security.edit'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/Security')
+            ->component('Security')
             ->where('canManagePasskeys', false)
             ->where('passkeys', [])
             ->where('canManageTwoFactor', false)
