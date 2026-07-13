@@ -9,7 +9,6 @@ use App\Support\MediaDisk;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
 
 class AvatarUploadController extends Controller
 {
@@ -44,16 +43,9 @@ class AvatarUploadController extends Controller
         ], 201);
     }
 
-    /**
-     * Destroy a temporary avatar upload.
-     */
     public function destroy(Request $request, TemporaryAvatarUpload $temporaryAvatarUpload): Response
     {
         abort_unless($temporaryAvatarUpload->user_id === $request->user()->id, 404);
-
-        if (Storage::disk($temporaryAvatarUpload->disk)->exists($temporaryAvatarUpload->path)) {
-            Storage::disk($temporaryAvatarUpload->disk)->delete($temporaryAvatarUpload->path);
-        }
 
         $temporaryAvatarUpload->delete();
 

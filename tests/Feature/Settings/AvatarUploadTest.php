@@ -110,6 +110,44 @@ test('unauthenticated users cannot delete profile avatar', function () {
         ->assertRedirect(route('login'));
 });
 
+test('an owner can successfully destroy their staged upload and its file', function () {
+    $user = User::factory()->create();
+    $upload = stageAvatarFor($user);
+
+    Storage::disk($upload->disk)->assertExists($upload->path);
+
+    $this->actingAs($user)
+        ->deleteJson(route('profile.avatar-uploads.destroy', $upload))
+        ->assertNoContent();
+
+    expect(TemporaryAvatarUpload::find($upload->id))->toBeNull();
+    Storage::disk($upload->disk)->assertMissing($upload->path);
+});
+
+test('promoting an expired upload fails validation', function () {
+    $user = User::factory()->create();
+    $upload = TemporaryAvatarUpload::factory()->expired()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), profilePayload($user, ['temporary_avatar_upload_id' => $upload->id]))
+        ->assertSessionHasErrors('temporary_avatar_upload_id');
+});
+
+test('staged files are removed from storage upon promotion', function () {
+    $user = User::factory()->create();
+    $upload = stageAvatarFor($user);
+
+    Storage::disk($upload->disk)->assertExists($upload->path);
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), profilePayload($user, ['temporary_avatar_upload_id' => $upload->id]))
+        ->assertRedirect(route('profile.edit'));
+
+    Storage::disk($upload->disk)->assertMissing($upload->path);
+});
+
 function stageAvatarFor(User $user): TemporaryAvatarUpload
 {
     $file = UploadedFile::fake()->image('avatar.jpg');

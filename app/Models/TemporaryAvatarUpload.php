@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property string $id
@@ -54,5 +55,17 @@ class TemporaryAvatarUpload extends Model
             'size' => 'integer',
             'expires_at' => 'immutable_datetime',
         ];
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (TemporaryAvatarUpload $upload) {
+            if (Storage::disk($upload->disk)->exists($upload->path)) {
+                Storage::disk($upload->disk)->delete($upload->path);
+            }
+        });
     }
 }
