@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
+import GeneralSettingsController from '@/actions/App/Http/Controllers/Settings/GeneralSettingsController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useTrans } from '@/composables/useTrans';
-import { update } from '@/routes/settings/general';
 import type { GeneralSettings, SelectOption } from '@/types';
 
 type Props = {
@@ -32,7 +32,7 @@ defineOptions({
         breadcrumbs: [
             {
                 title: 'General settings',
-                href: update.url(),
+                href: GeneralSettingsController.edit.url(),
             },
         ],
     },
@@ -51,7 +51,7 @@ const form = useForm<GeneralSettingsFormData>({
 });
 
 function submit(): void {
-    form.submit(update(), { preserveScroll: true });
+    form.submit(GeneralSettingsController.update(), { preserveScroll: true });
 }
 </script>
 
