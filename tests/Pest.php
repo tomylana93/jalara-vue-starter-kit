@@ -22,6 +22,9 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Unit/Auth/Actions');
 
+pest()->extend(TestCase::class)
+    ->in('Unit/Authorization');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations
