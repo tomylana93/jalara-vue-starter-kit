@@ -12,6 +12,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 beforeEach(function () {
     $this->withoutMiddleware(PreventRequestForgery::class);
     Storage::fake('public');
+    config(['inertia.testing.ensure_pages_exist' => false]);
 });
 
 test('an authenticated user can stage a JPEG avatar', function () {
@@ -25,6 +26,14 @@ test('an authenticated user can stage a JPEG avatar', function () {
         ->assertJsonStructure(['id', 'name', 'size', 'type']);
 
     expect(TemporaryAvatarUpload::query()->where('user_id', $user->id)->count())->toBe(1);
+});
+
+test('avatar uploads can be staged via the direct profile URL', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson('/profile/avatar-uploads', ['file' => UploadedFile::fake()->image('avatar.jpg')])
+        ->assertCreated();
 });
 
 test('staged avatars reject unsupported types and files larger than two MiB', function () {
@@ -248,7 +257,7 @@ test('the profile page shares the avatar conversion with the user shell', functi
     $this->actingAs($user)
         ->get(route('profile.edit'))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/Profile')
+            ->component('Profile')
             ->where('auth.user.avatar', $user->refresh()->getFirstMediaUrl('avatar', 'avatar'))
             ->where('avatar.id', $user->getFirstMedia('avatar')->id)
             ->where('avatar.source', $user->getFirstMediaUrl('avatar', 'avatar'))
@@ -267,7 +276,7 @@ test('the profile page and user shell share null avatar values after removal', f
     $this->actingAs($user)
         ->get(route('profile.edit'))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/Profile')
+            ->component('Profile')
             ->where('auth.user.avatar', null)
             ->where('avatar', null)
         );

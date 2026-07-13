@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers;
 
 use App\Actions\PromoteTemporaryAvatarUpload;
 use App\Actions\UpdateUserProfile;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,7 +23,7 @@ class ProfileController extends Controller
         $avatar = $request->user()->getFirstMedia('avatar');
         $avatarUrl = $request->user()->avatarUrl();
 
-        return Inertia::render('settings/Profile', [
+        return Inertia::render('Profile', [
             'avatar' => $avatar === null || $avatarUrl === null ? null : [
                 'id' => $avatar->id,
                 'source' => $avatarUrl,
