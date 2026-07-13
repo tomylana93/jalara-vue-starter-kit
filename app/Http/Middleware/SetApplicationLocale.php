@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SetApplicationLocale
 {
-    public function __construct(private GeneralSettings $generalSettings) {}
+    public function __construct(private readonly GeneralSettings $generalSettings) {}
 
     /**
      * Handle an incoming request.

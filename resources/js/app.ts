@@ -5,9 +5,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
 function resolveAppName(): string {
-    const dataPage = document
-        .getElementById('app')
-        ?.getAttribute('data-page');
+    const dataPage = document.getElementById('app')?.getAttribute('data-page');
 
     if (dataPage) {
         try {
