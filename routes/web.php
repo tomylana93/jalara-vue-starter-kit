@@ -14,7 +14,6 @@ Route::get('/', function (Request $request): RedirectResponse {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
-    Route::inertia('settings/appearance', 'settings/Appearance')->name('appearance.edit');
 });
 
 require __DIR__.'/profile.php';
