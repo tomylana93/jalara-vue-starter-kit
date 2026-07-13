@@ -1,15 +1,28 @@
 <script setup lang="ts">
 import { Form, Head, usePage } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import {
+    destroy as destroyTemporaryAvatarUpload,
+    store as storeAvatarUpload,
+} from '@/actions/App/Http/Controllers/Settings/AvatarUploadController';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Uploader } from '@/components/uploader';
+import type { UploaderExistingFile } from '@/components/uploader';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
+
+type Props = {
+    avatar: UploaderExistingFile | null;
+};
+
+const props = defineProps<Props>();
 
 defineOptions({
     layout: {
@@ -24,6 +37,15 @@ defineOptions({
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+const temporaryAvatarUploadIds = ref<string[]>([]);
+const avatarInitials = computed(() =>
+    user.value.name
+        .split(' ')
+        .map((name) => name[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase(),
+);
 </script>
 
 <template>
@@ -43,6 +65,56 @@ const user = computed(() => page.props.auth.user);
             class="space-y-6"
             v-slot="{ errors, processing }"
         >
+            <input
+                type="hidden"
+                name="temporary_avatar_upload_id"
+                :value="temporaryAvatarUploadIds[0] ?? ''"
+            />
+
+            <div class="grid gap-3">
+                <Label>Avatar</Label>
+
+                <div v-if="props.avatar" class="flex items-center gap-3">
+                    <Avatar class="size-16">
+                        <AvatarImage
+                            :src="props.avatar.source"
+                            :alt="user.name"
+                        />
+                        <AvatarFallback>{{ avatarInitials }}</AvatarFallback>
+                    </Avatar>
+
+                    <Link
+                        :href="ProfileController.destroyAvatar()"
+                        method="delete"
+                        as="button"
+                        class="text-sm font-medium text-destructive hover:underline"
+                    >
+                        Remove avatar
+                    </Link>
+                </div>
+
+                <Uploader
+                    id="avatar"
+                    v-model="temporaryAvatarUploadIds"
+                    :upload-url="storeAvatarUpload.url()"
+                    :delete-url-resolver="
+                        (id) => destroyTemporaryAvatarUpload.url(id)
+                    "
+                    :accepted-file-types="['image/jpeg', 'image/webp']"
+                    :max-file-size="2 * 1024 * 1024"
+                    label-idle="Drop your JPEG or WebP avatar here, or browse"
+                    preview-size="compact"
+                    :messages="{
+                        invalidType: 'Please choose a JPEG or WebP image.',
+                        tooLarge: 'Avatar images must be 2 MiB or smaller.',
+                        uploadFailed: 'Your avatar could not be uploaded.',
+                        removeFailed:
+                            'Your temporary avatar could not be removed.',
+                    }"
+                />
+                <InputError :message="errors.temporary_avatar_upload_id" />
+            </div>
+
             <div class="grid gap-2">
                 <Label for="name">Name</Label>
                 <Input

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 /**
  * @property string $id
@@ -62,10 +63,14 @@ class TemporaryAvatarUpload extends Model
      */
     protected static function booted(): void
     {
-        static::deleting(function (TemporaryAvatarUpload $upload) {
-            if (Storage::disk($upload->disk)->exists($upload->path)) {
-                Storage::disk($upload->disk)->delete($upload->path);
+        static::deleting(function (TemporaryAvatarUpload $upload): void {
+            $disk = Storage::disk($upload->disk);
+
+            if ($disk->delete($upload->path) || $disk->missing($upload->path)) {
+                return;
             }
+
+            throw new RuntimeException('Unable to delete temporary avatar upload file.');
         });
     }
 }

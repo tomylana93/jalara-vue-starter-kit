@@ -25,7 +25,7 @@ class AvatarUploadController extends Controller
             'disk' => $disk,
         ]);
 
-        $upload = TemporaryAvatarUpload::create([
+        $upload = TemporaryAvatarUpload::query()->create([
             'user_id' => $user->id,
             'disk' => $disk,
             'path' => $path,
@@ -43,11 +43,17 @@ class AvatarUploadController extends Controller
         ], 201);
     }
 
-    public function destroy(Request $request, TemporaryAvatarUpload $temporaryAvatarUpload): Response
+    public function destroy(Request $request, string $temporaryAvatarUpload): Response
     {
-        abort_unless($temporaryAvatarUpload->user_id === $request->user()->id, 404);
+        $upload = TemporaryAvatarUpload::query()->find($temporaryAvatarUpload);
 
-        $temporaryAvatarUpload->delete();
+        if ($upload === null) {
+            return response()->noContent();
+        }
+
+        abort_unless($upload->user_id === $request->user()->id, 404);
+
+        $upload->delete();
 
         return response()->noContent();
     }

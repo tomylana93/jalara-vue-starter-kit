@@ -9,8 +9,10 @@ use App\Http\Requests\Settings\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 class ProfileController extends Controller
 {
@@ -19,7 +21,17 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $avatar = $request->user()->getFirstMedia('avatar');
+        $avatarUrl = $request->user()->avatarUrl();
+
         return Inertia::render('settings/Profile', [
+            'avatar' => $avatar === null || $avatarUrl === null ? null : [
+                'id' => $avatar->id,
+                'source' => $avatarUrl,
+                'name' => $avatar->file_name,
+                'size' => $avatar->size,
+                'type' => $avatar->mime_type,
+            ],
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
         ]);
@@ -33,9 +45,17 @@ class ProfileController extends Controller
         UpdateUserProfile $updateUserProfile,
         PromoteTemporaryAvatarUpload $promoteTemporaryAvatarUpload
     ): RedirectResponse {
-        $updateUserProfile->handle($request->user(), $request->profileAttributes());
+        try {
+            $promoteTemporaryAvatarUpload->handle($request->user(), $request->temporaryAvatarUploadId());
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable) {
+            return back()->withErrors([
+                'temporary_avatar_upload_id' => __('We could not access your staged avatar. Please try again.'),
+            ]);
+        }
 
-        $promoteTemporaryAvatarUpload->handle($request->user(), $request->temporaryAvatarUploadId());
+        $updateUserProfile->handle($request->user(), $request->profileAttributes());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
 

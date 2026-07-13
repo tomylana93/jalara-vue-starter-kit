@@ -42,7 +42,7 @@ test('avatar media uses the public disk when R2 is partially complete', function
 });
 
 test('avatar media uses the public disk when R2 configuration is missing or invalid', function () {
-    config()->set('filesystems.disks.r2', null);
+    config()->set('filesystems.disks.r2');
     expect(MediaDisk::avatar())->toBe('public');
 
     config()->set('filesystems.disks.r2', 'not-an-array');

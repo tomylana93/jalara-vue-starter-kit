@@ -186,9 +186,13 @@ class User extends Authenticatable implements HasMedia, PasskeyUser
 
     public function avatarUrl(): ?string
     {
-        $url = $this->getFirstMediaUrl('avatar', 'avatar');
+        $avatar = $this->getFirstMedia('avatar');
 
-        return $url === '' ? null : $url;
+        if (! $avatar instanceof Media || ! $avatar->hasGeneratedConversion('avatar')) {
+            return null;
+        }
+
+        return $avatar->getUrl('avatar');
     }
 
     /**

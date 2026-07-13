@@ -1,7 +1,12 @@
 <?php
 
+use App\Models\TemporaryAvatarUpload;
 use App\Models\User;
+use App\Support\MediaDisk;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -45,6 +50,39 @@ test('profile information can be updated', function () {
     expect($user->name)->toBe('Test User');
     expect($user->email)->toBe('test@example.com');
     expect($user->email_verified_at)->toBeNull();
+});
+
+test('profile information is updated when promoting a temporary avatar upload', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    $file = UploadedFile::fake()->image('avatar.jpg');
+    $disk = MediaDisk::avatar();
+    $path = $file->storeAs("temporary-avatars/{$user->id}", Str::random(40).'.jpg', ['disk' => $disk]);
+    $upload = TemporaryAvatarUpload::query()->create([
+        'user_id' => $user->id,
+        'disk' => $disk,
+        'path' => $path,
+        'original_name' => 'avatar.jpg',
+        'mime_type' => 'image/jpeg',
+        'size' => $file->getSize(),
+        'expires_at' => now()->addDay(),
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), [
+            'name' => 'Updated User',
+            'email' => 'updated@example.com',
+            'phone' => '+628111111111',
+            'temporary_avatar_upload_id' => $upload->id,
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('profile.edit'));
+
+    expect($user->refresh())
+        ->name->toBe('Updated User')
+        ->email->toBe('updated@example.com')
+        ->phone->toBe('+628111111111')
+        ->getMedia('avatar')->toHaveCount(1);
 });
 
 test('email verification status is unchanged when the email address is unchanged', function () {

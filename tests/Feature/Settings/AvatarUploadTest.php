@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->withoutMiddleware(PreventRequestForgery::class);
@@ -49,7 +50,7 @@ test('a profile save promotes only the current users staged avatar', function ()
         ->assertRedirect(route('profile.edit'));
 
     expect($user->refresh()->getMedia('avatar'))->toHaveCount(1)
-        ->and(TemporaryAvatarUpload::find($upload->id))->toBeNull();
+        ->and(TemporaryAvatarUpload::query()->find($upload->id))->toBeNull();
 });
 
 test('a user cannot destroy or promote another users staged avatar', function () {
@@ -62,8 +63,13 @@ test('a user cannot destroy or promote another users staged avatar', function ()
         ->assertNotFound();
 
     $this->actingAs($attacker)
-        ->patch(route('profile.update'), profilePayload($attacker, ['temporary_avatar_upload_id' => $upload->id]))
+        ->patch(route('profile.update'), profilePayload($attacker, [
+            'name' => 'Changed Name',
+            'temporary_avatar_upload_id' => $upload->id,
+        ]))
         ->assertSessionHasErrors('temporary_avatar_upload_id');
+
+    expect($attacker->refresh()->name)->not->toBe('Changed Name');
 });
 
 test('a new avatar replaces the old avatar and the owner can remove it', function () {
@@ -120,15 +126,93 @@ test('an owner can successfully destroy their staged upload and its file', funct
         ->deleteJson(route('profile.avatar-uploads.destroy', $upload))
         ->assertNoContent();
 
-    expect(TemporaryAvatarUpload::find($upload->id))->toBeNull();
+    expect(TemporaryAvatarUpload::query()->find($upload->id))->toBeNull();
     Storage::disk($upload->disk)->assertMissing($upload->path);
 });
 
-test('promoting an expired upload fails validation', function () {
+test('an owner can cancel the same staged upload more than once', function () {
+    $user = User::factory()->create();
+    $upload = stageAvatarFor($user);
+
+    $this->actingAs($user)
+        ->deleteJson(route('profile.avatar-uploads.destroy', $upload))
+        ->assertNoContent();
+
+    $this->actingAs($user)
+        ->deleteJson(route('profile.avatar-uploads.destroy', $upload->id))
+        ->assertNoContent();
+});
+
+test('promoting an expired upload fails validation without updating the profile', function () {
     $user = User::factory()->create();
     $upload = TemporaryAvatarUpload::factory()->expired()->create([
         'user_id' => $user->id,
     ]);
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), profilePayload($user, [
+            'name' => 'Changed Name',
+            'temporary_avatar_upload_id' => $upload->id,
+        ]))
+        ->assertSessionHasErrors([
+            'temporary_avatar_upload_id' => 'The temporary avatar upload is invalid or has expired.',
+        ]);
+
+    expect($user->refresh()->name)->not->toBe('Changed Name');
+});
+
+test('promoting a missing staged file fails validation without updating the profile', function () {
+    $user = User::factory()->create();
+    $upload = stageAvatarFor($user);
+    Storage::disk($upload->disk)->delete($upload->path);
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), profilePayload($user, [
+            'name' => 'Changed Name',
+            'temporary_avatar_upload_id' => $upload->id,
+        ]))
+        ->assertSessionHasErrors('temporary_avatar_upload_id');
+
+    expect($user->refresh()->name)->not->toBe('Changed Name');
+});
+
+test('a storage read failure while promoting an avatar returns a retryable form error without updating the profile', function () {
+    $user = User::factory()->create();
+    $upload = stageAvatarFor($user);
+
+    Storage::shouldReceive('disk')
+        ->once()
+        ->with($upload->disk)
+        ->andThrow(new RuntimeException('R2 is unavailable.'));
+
+    $this->actingAs($user)
+        ->from(route('profile.edit'))
+        ->patch(route('profile.update'), profilePayload($user, [
+            'name' => 'Changed Name',
+            'temporary_avatar_upload_id' => $upload->id,
+        ]))
+        ->assertRedirect(route('profile.edit'))
+        ->assertSessionHasErrors([
+            'temporary_avatar_upload_id' => 'We could not access your staged avatar. Please try again.',
+        ]);
+
+    expect($user->refresh()->name)->not->toBe('Changed Name');
+});
+
+test('promoting a staged file with an invalid physical MIME type fails validation', function () {
+    $user = User::factory()->create();
+    $upload = stageAvatarFor($user);
+    Storage::disk($upload->disk)->put($upload->path, 'not an image');
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), profilePayload($user, ['temporary_avatar_upload_id' => $upload->id]))
+        ->assertSessionHasErrors('temporary_avatar_upload_id');
+});
+
+test('promoting a staged file larger than two MiB fails validation', function () {
+    $user = User::factory()->create();
+    $upload = stageAvatarFor($user);
+    Storage::disk($upload->disk)->put($upload->path, str_repeat('a', 2 * 1024 * 1024 + 1));
 
     $this->actingAs($user)
         ->patch(route('profile.update'), profilePayload($user, ['temporary_avatar_upload_id' => $upload->id]))
@@ -148,13 +232,54 @@ test('staged files are removed from storage upon promotion', function () {
     Storage::disk($upload->disk)->assertMissing($upload->path);
 });
 
+test('the profile page shares the avatar conversion with the user shell', function () {
+    $user = User::factory()->create();
+    $user->addMedia(UploadedFile::fake()->image('avatar.jpg'))
+        ->toMediaCollection('avatar');
+
+    $avatar = $user->refresh()->getFirstMedia('avatar');
+    $conversionProperties = getimagesize($avatar->getPath('avatar'));
+
+    expect($avatar->hasGeneratedConversion('avatar'))->toBeTrue()
+        ->and($conversionProperties[0])->toBe(256)
+        ->and($conversionProperties[1])->toBe(256)
+        ->and($conversionProperties[2])->toBe(IMAGETYPE_WEBP);
+
+    $this->actingAs($user)
+        ->get(route('profile.edit'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('settings/Profile')
+            ->where('auth.user.avatar', $user->refresh()->getFirstMediaUrl('avatar', 'avatar'))
+            ->where('avatar.id', $user->getFirstMedia('avatar')->id)
+            ->where('avatar.source', $user->getFirstMediaUrl('avatar', 'avatar'))
+        );
+});
+
+test('the profile page and user shell share null avatar values after removal', function () {
+    $user = User::factory()->create();
+    $user->addMedia(UploadedFile::fake()->image('avatar.jpg'))
+        ->toMediaCollection('avatar');
+
+    $this->actingAs($user)
+        ->delete(route('profile.avatar.destroy'))
+        ->assertRedirect(route('profile.edit'));
+
+    $this->actingAs($user)
+        ->get(route('profile.edit'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('settings/Profile')
+            ->where('auth.user.avatar', null)
+            ->where('avatar', null)
+        );
+});
+
 function stageAvatarFor(User $user): TemporaryAvatarUpload
 {
     $file = UploadedFile::fake()->image('avatar.jpg');
     $disk = MediaDisk::avatar();
     $path = $file->storeAs("temporary-avatars/{$user->id}", Str::random(40).'.jpg', ['disk' => $disk]);
 
-    return TemporaryAvatarUpload::create([
+    return TemporaryAvatarUpload::query()->create([
         'user_id' => $user->id,
         'disk' => $disk,
         'path' => $path,
