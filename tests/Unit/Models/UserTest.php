@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\MediaCollections\Exceptions\FileCannotBeAdded;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
@@ -50,9 +51,23 @@ test('a user avatar collection is single-file and exposes its conversion URL', f
     Storage::fake('public');
     $user = User::factory()->create();
 
+    expect($user->avatarUrl())->toBeNull();
+
     $user->addMedia(UploadedFile::fake()->image('avatar.jpg'))
         ->toMediaCollection('avatar');
 
+    $user->refresh();
+
     expect($user->getMedia('avatar'))->toHaveCount(1)
         ->and($user->avatarUrl())->toBe($user->getFirstMediaUrl('avatar', 'avatar'));
+});
+
+test('a user avatar collection rejects disallowed MIME types', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+
+    expect(function () use ($user) {
+        $user->addMedia(UploadedFile::fake()->create('document.pdf', 100, 'application/pdf'))
+            ->toMediaCollection('avatar');
+    })->toThrow(FileCannotBeAdded::class);
 });
