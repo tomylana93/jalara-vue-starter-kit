@@ -7,6 +7,9 @@
     "guidelines": true,
     "mcp": true,
     "nightwatch": false,
+    "packages": [
+        "fruitcake/laravel-debugbar"
+    ],
     "sail": false,
     "skills": [
         "fortify-development",
@@ -15,6 +18,7 @@
         "pest-testing",
         "inertia-vue-development",
         "tailwindcss-development",
+        "debug-using-debugbar",
         "deploying-laravel-cloud"
     ]
 }
