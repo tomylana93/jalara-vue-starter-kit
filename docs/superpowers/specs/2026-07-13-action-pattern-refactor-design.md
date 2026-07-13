@@ -81,12 +81,11 @@ Unit test action ditempatkan berdasarkan domain dan use case:
 
 ```text
 tests/Unit/
-└── Domain/
-    └── Auth/
-        └── Actions/
-            ├── UpdateUserProfileTest.php
-            ├── DeleteUserAccountTest.php
-            └── UpdateUserPasswordTest.php
+└── Auth/
+    └── Actions/
+        ├── UpdateUserProfileTest.php
+        ├── DeleteUserAccountTest.php
+        └── UpdateUserPasswordTest.php
 ```
 
 Feature test tetap berada berdasarkan endpoint:
@@ -116,7 +115,7 @@ Refactor tidak mengubah dependency proyek, endpoint, payload frontend, route nam
 
 - Mutation logic Settings tidak lagi berada langsung di controller.
 - Semua action baru menggunakan `handle()`.
-- Unit test action berada di `tests/Unit/Domain/Auth/Actions`.
+- Unit test action berada di `tests/Unit/Auth/Actions`.
 - Feature test endpoint tetap berada di `tests/Feature/Settings`.
 - Route contract dan perilaku HTTP tetap kompatibel.
 - Test terkait dan formatter PHP lulus.
