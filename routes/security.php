@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\Security\SecurityController;
 use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Support\Facades\Route;
 

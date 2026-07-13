@@ -5,6 +5,7 @@ use App\Models\User;
 use App\Support\MediaDisk;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -35,6 +36,16 @@ test('legacy settings profile URL is unavailable', function () {
     $this->actingAs(User::factory()->create())
         ->get('/settings/profile')
         ->assertNotFound();
+});
+
+test('legacy settings and appearance URLs are unavailable', function (string $uri) {
+    $this->actingAs(User::factory()->create())
+        ->get($uri)
+        ->assertNotFound();
+})->with(['/settings', '/settings/appearance']);
+
+test('the appearance named route no longer exists', function () {
+    expect(Route::has('appearance.edit'))->toBeFalse();
 });
 
 test('profile information can be updated', function () {

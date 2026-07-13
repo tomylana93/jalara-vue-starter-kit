@@ -5,8 +5,8 @@ import { computed, ref } from 'vue';
 import {
     destroy as destroyTemporaryAvatarUpload,
     store as storeAvatarUpload,
-} from '@/actions/App/Http/Controllers/AvatarUploadController';
-import ProfileController from '@/actions/App/Http/Controllers/ProfileController';
+} from '@/actions/App/Http/Controllers/Profile/AvatarUploadController';
+import ProfileController from '@/actions/App/Http/Controllers/Profile/ProfileController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

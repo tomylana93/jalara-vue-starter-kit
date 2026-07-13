@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Profile;
 
-use App\Http\Requests\StoreTemporaryAvatarUploadRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Profile\StoreTemporaryAvatarUploadRequest;
 use App\Models\TemporaryAvatarUpload;
 use App\Support\MediaDisk;
 use Illuminate\Http\JsonResponse;

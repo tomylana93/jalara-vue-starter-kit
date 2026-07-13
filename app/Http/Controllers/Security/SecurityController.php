@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Security;
 
 use App\Actions\UpdateUserPassword;
-use App\Http\Requests\PasswordUpdateRequest;
-use App\Http\Requests\TwoFactorAuthenticationRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Security\PasswordUpdateRequest;
+use App\Http\Requests\Security\TwoFactorAuthenticationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;

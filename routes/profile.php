@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\AvatarUploadController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Profile\AvatarUploadController;
+use App\Http\Controllers\Profile\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
