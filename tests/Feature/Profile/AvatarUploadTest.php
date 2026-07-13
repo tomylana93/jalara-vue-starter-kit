@@ -12,7 +12,6 @@ use Inertia\Testing\AssertableInertia as Assert;
 beforeEach(function () {
     $this->withoutMiddleware(PreventRequestForgery::class);
     Storage::fake('public');
-    config(['inertia.testing.ensure_pages_exist' => false]);
 });
 
 test('an authenticated user can stage a JPEG avatar', function () {

@@ -5,10 +5,6 @@ use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 
-beforeEach(function () {
-    config(['inertia.testing.ensure_pages_exist' => false]);
-});
-
 test('security page is displayed', function () {
     $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 

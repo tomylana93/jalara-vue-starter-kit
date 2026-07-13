@@ -11,7 +11,6 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->withoutMiddleware(PreventRequestForgery::class);
-    config(['inertia.testing.ensure_pages_exist' => false]);
 });
 
 test('profile page is displayed', function () {
