@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Settings\GeneralSettings;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,7 +40,7 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => app(GeneralSettings::class)->site_name,
             'locale' => app()->getLocale(),
             'auth' => [
                 'user' => fn () => $user === null ? null : [

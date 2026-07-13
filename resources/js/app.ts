@@ -4,7 +4,27 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+function resolveAppName(): string {
+    const dataPage = document
+        .getElementById('app')
+        ?.getAttribute('data-page');
+
+    if (dataPage) {
+        try {
+            const name = JSON.parse(dataPage)?.props?.name;
+
+            if (typeof name === 'string' && name !== '') {
+                return name;
+            }
+        } catch {
+            // Fall back to the build-time application name below.
+        }
+    }
+
+    return import.meta.env.VITE_APP_NAME || 'Laravel';
+}
+
+const appName = resolveAppName();
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

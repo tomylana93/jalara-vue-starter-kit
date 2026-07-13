@@ -5,10 +5,9 @@ namespace App\Http\Middleware;
 use App\Settings\GeneralSettings;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response;
 
-class HandleAppearance
+class SetApplicationLocale
 {
     public function __construct(private GeneralSettings $generalSettings) {}
 
@@ -19,8 +18,7 @@ class HandleAppearance
      */
     public function handle(Request $request, Closure $next): Response
     {
-        View::share('appearance', $request->cookie('appearance') ?? 'system');
-        View::share('siteName', $this->generalSettings->site_name);
+        app()->setLocale($this->generalSettings->site_locale);
 
         return $next($request);
     }
