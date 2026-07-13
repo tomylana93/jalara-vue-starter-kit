@@ -178,10 +178,10 @@ class User extends Authenticatable implements HasMedia, PasskeyUser
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('avatar')
-            ->format('webp')
-            ->fit(Fit::Crop, 256, 256)
             ->performOnCollections('avatar')
-            ->nonQueued();
+            ->nonQueued()
+            ->format('webp')
+            ->fit(Fit::Crop, 256, 256);
     }
 
     public function avatarUrl(): ?string
