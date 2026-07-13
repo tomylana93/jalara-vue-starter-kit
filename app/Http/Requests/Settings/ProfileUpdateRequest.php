@@ -19,4 +19,17 @@ class ProfileUpdateRequest extends FormRequest
     {
         return $this->profileRules($this->user()->id);
     }
+
+    /**
+     * Get the validated profile attributes with their guaranteed shape.
+     *
+     * @return array{name: string, email: string}
+     */
+    public function profileAttributes(): array
+    {
+        return [
+            'name' => $this->string('name')->toString(),
+            'email' => $this->string('email')->toString(),
+        ];
+    }
 }
