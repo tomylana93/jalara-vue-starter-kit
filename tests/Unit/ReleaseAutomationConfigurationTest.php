@@ -6,9 +6,7 @@ function repositoryFile(string $path): string
 {
     $contents = file_get_contents(dirname(__DIR__, 2).DIRECTORY_SEPARATOR.$path);
 
-    if ($contents === false) {
-        throw new RuntimeException("Unable to read repository file: {$path}");
-    }
+    throw_if($contents === false, RuntimeException::class, "Unable to read repository file: {$path}");
 
     return $contents;
 }
