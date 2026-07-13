@@ -7,7 +7,7 @@ use App\Models\User;
 final class UpdateUserProfile
 {
     /**
-     * @param  array{name: string, email: string}  $attributes
+     * @param  array{name: string, email: string, phone: ?string}  $attributes
      */
     public function handle(User $user, array $attributes): User
     {

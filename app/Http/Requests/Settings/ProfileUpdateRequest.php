@@ -23,13 +23,14 @@ class ProfileUpdateRequest extends FormRequest
     /**
      * Get the validated profile attributes with their guaranteed shape.
      *
-     * @return array{name: string, email: string}
+     * @return array{name: string, email: string, phone: ?string}
      */
     public function profileAttributes(): array
     {
         return [
             'name' => $this->string('name')->toString(),
             'email' => $this->string('email')->toString(),
+            'phone' => $this->filled('phone') ? $this->string('phone')->toString() : null,
         ];
     }
 }
