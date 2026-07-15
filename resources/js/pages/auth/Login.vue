@@ -50,7 +50,6 @@ defineProps<{
                     id="email"
                     type="email"
                     name="email"
-                    required
                     autofocus
                     :tabindex="1"
                     autocomplete="email"
@@ -74,7 +73,6 @@ defineProps<{
                 <PasswordInput
                     id="password"
                     name="password"
-                    required
                     :tabindex="2"
                     autocomplete="current-password"
                     placeholder="Password"

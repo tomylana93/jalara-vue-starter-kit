@@ -46,7 +46,6 @@ defineOptions({
                     id="password"
                     name="password"
                     class="mt-1 block w-full"
-                    required
                     autocomplete="current-password"
                     autofocus
                 />

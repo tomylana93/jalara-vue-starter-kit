@@ -110,7 +110,6 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                     type="text"
                     placeholder="Enter recovery code"
                     :autofocus="showRecoveryInput"
-                    required
                 />
                 <InputError :message="errors.recovery_code" />
                 <Button type="submit" class="w-full" :disabled="processing"

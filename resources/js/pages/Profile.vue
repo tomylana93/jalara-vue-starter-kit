@@ -119,14 +119,13 @@ const avatarInitials = computed(() =>
                 <Label for="name">Name</Label>
                 <Input
                     id="name"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     name="name"
                     :default-value="user.name"
-                    required
                     autocomplete="name"
                     placeholder="Full name"
                 />
-                <InputError class="mt-2" :message="errors.name" />
+                <InputError :message="errors.name" />
             </div>
 
             <div class="grid gap-2">
@@ -134,14 +133,13 @@ const avatarInitials = computed(() =>
                 <Input
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     name="email"
                     :default-value="user.email"
-                    required
                     autocomplete="username"
                     placeholder="Email address"
                 />
-                <InputError class="mt-2" :message="errors.email" />
+                <InputError :message="errors.email" />
             </div>
 
             <div class="grid gap-2">
@@ -149,13 +147,13 @@ const avatarInitials = computed(() =>
                 <Input
                     id="phone"
                     type="tel"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     name="phone"
                     :default-value="user.phone ?? ''"
                     autocomplete="tel"
                     placeholder="Phone number"
                 />
-                <InputError class="mt-2" :message="errors.phone" />
+                <InputError :message="errors.phone" />
             </div>
 
             <div v-if="page.props.mustVerifyEmail && !user.email_verified_at">
