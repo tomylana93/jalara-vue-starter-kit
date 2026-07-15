@@ -135,14 +135,12 @@ const avatarInitials = computed(() =>
                 <Label for="email">Email address</Label>
                 <Input
                     id="email"
-                    type="email"
                     class="block w-full"
                     name="email"
                     :default-value="user.email"
                     autocomplete="username"
                     placeholder="Email address"
                     :aria-invalid="invalid('email')"
-                    @blur="validate('email')"
                 />
                 <InputError :message="errors.email" />
             </div>

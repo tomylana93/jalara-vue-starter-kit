@@ -32,6 +32,14 @@ test('profile page is displayed', function () {
         );
 });
 
+test('profile email validation is deferred until form submission', function (): void {
+    $profilePage = file_get_contents(resource_path('js/pages/Profile.vue'));
+
+    expect($profilePage)
+        ->not->toContain('type="email"')
+        ->not->toContain("@blur=\"validate('email')\"");
+});
+
 test('legacy settings profile URL is unavailable', function () {
     $this->actingAs(User::factory()->create())
         ->get('/settings/profile')
