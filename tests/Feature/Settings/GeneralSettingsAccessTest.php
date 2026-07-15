@@ -47,3 +47,56 @@ test('it validates the general settings payload', function (): void {
         'site_locale' => 'fr',
     ])->assertSessionHasErrors(['site_name', 'site_description', 'site_locale']);
 });
+
+test('a user without manage settings cannot make a precognitive general settings request', function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->withPrecognition()
+        ->withHeader('Precognition-Validate-Only', 'site_name')
+        ->patch(route('settings.general.update'), [
+            'site_name' => '',
+            'site_description' => '',
+            'site_locale' => SiteLocale::English->value,
+        ])
+        ->assertForbidden();
+});
+
+test('general settings precognition returns field errors without persisting settings', function (): void {
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::ManageSettings->value);
+    $settings = app(GeneralSettings::class);
+    $originalSiteName = $settings->site_name;
+
+    $this->actingAs($user)
+        ->withPrecognition()
+        ->withHeader('Precognition-Validate-Only', 'site_name')
+        ->patch(route('settings.general.update'), [
+            'site_name' => '',
+            'site_description' => '',
+            'site_locale' => SiteLocale::English->value,
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('site_name');
+
+    expect(app(GeneralSettings::class)->site_name)->toBe($originalSiteName);
+});
+
+test('general settings precognition succeeds without persisting settings', function (): void {
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::ManageSettings->value);
+    $settings = app(GeneralSettings::class);
+    $originalSiteName = $settings->site_name;
+
+    $this->actingAs($user)
+        ->withPrecognition()
+        ->withHeader('Precognition-Validate-Only', 'site_name')
+        ->patch(route('settings.general.update'), [
+            'site_name' => 'Validated but not saved',
+            'site_description' => '',
+            'site_locale' => SiteLocale::English->value,
+        ])
+        ->assertSuccessfulPrecognition();
+
+    expect(app(GeneralSettings::class)->site_name)->toBe($originalSiteName);
+});

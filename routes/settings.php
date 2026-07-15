@@ -14,6 +14,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->can('view', GeneralSettings::class);
 
     Route::patch('settings/general', [GeneralSettingsController::class, 'update'])
+        ->middleware(['precognitive', 'throttle:30,1'])
         ->name('settings.general.update')
         ->can('update', GeneralSettings::class);
 });
