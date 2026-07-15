@@ -63,7 +63,8 @@ const avatarInitials = computed(() =>
         <Form
             v-bind="ProfileController.update.form()"
             class="space-y-6"
-            v-slot="{ errors, processing }"
+            :validation-timeout="750"
+            v-slot="{ errors, invalid, validate, processing }"
         >
             <input
                 type="hidden"
@@ -124,6 +125,8 @@ const avatarInitials = computed(() =>
                     :default-value="user.name"
                     autocomplete="name"
                     placeholder="Full name"
+                    :aria-invalid="invalid('name')"
+                    @blur="validate('name')"
                 />
                 <InputError :message="errors.name" />
             </div>
@@ -138,6 +141,8 @@ const avatarInitials = computed(() =>
                     :default-value="user.email"
                     autocomplete="username"
                     placeholder="Email address"
+                    :aria-invalid="invalid('email')"
+                    @blur="validate('email')"
                 />
                 <InputError :message="errors.email" />
             </div>
@@ -152,6 +157,8 @@ const avatarInitials = computed(() =>
                     :default-value="user.phone ?? ''"
                     autocomplete="tel"
                     placeholder="Phone number"
+                    :aria-invalid="invalid('phone')"
+                    @blur="validate('phone')"
                 />
                 <InputError :message="errors.phone" />
             </div>
