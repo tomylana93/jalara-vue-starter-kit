@@ -20,6 +20,10 @@ pest()->extend(TestCase::class)
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    ->in('Browser');
+
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Unit/Auth/Actions');
 
 pest()->extend(TestCase::class)
