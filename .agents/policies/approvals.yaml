@@ -1,0 +1,29 @@
+version: 1
+
+human_approval_required:
+  - dependency_addition_or_upgrade
+  - new_top_level_directory
+  - destructive_migration
+  - data_backfill
+  - authentication_behavior
+  - authorization_model
+  - public_api_contract
+  - new_architecture_pattern
+  - test_deletion
+  - merge_to_main
+  - production_deployment
+
+human_approval_not_required:
+  - formatting
+  - targeted_test_addition
+  - local_internal_refactor
+  - non_behavioral_lint_fix
+
+stop_conditions:
+  - required_decision_missing
+  - scope_conflicts_with_acceptance_criteria
+  - workspace_contains_unrelated_changes
+  - branch_is_dev_or_main
+  - branch_does_not_descend_from_dev
+  - identical_gate_failure_after_maximum_fix_cycles
+  - requested_change_requires_forbidden_write_access

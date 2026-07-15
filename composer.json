@@ -83,6 +83,11 @@
             "pnpm run types:check",
             "@test"
         ],
+        "agent:gate": [
+            "Composer\\Config::disableProcessTimeout",
+            "@ci:check",
+            "pnpm run build"
+        ],
         "types:check": [
             "phpstan analyse --memory-limit=1G --no-progress"
         ],
