@@ -217,3 +217,44 @@ test('user can update profile without changing their existing phone number', fun
 
     expect($user->refresh()->name)->toBe('Updated Name');
 });
+
+test('profile precognition returns field validation errors without updating the user', function (): void {
+    $user = User::factory()->create([
+        'name' => 'Original Name',
+        'email' => 'original@example.com',
+    ]);
+
+    $this->actingAs($user)
+        ->withPrecognition()
+        ->withHeader('Precognition-Validate-Only', 'name')
+        ->patch(route('profile.update'), [
+            'name' => '',
+            'email' => $user->email,
+            'phone' => '',
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('name');
+
+    expect($user->refresh())
+        ->name->toBe('Original Name')
+        ->email->toBe('original@example.com');
+});
+
+test('profile precognition succeeds without updating the user', function (): void {
+    $user = User::factory()->create([
+        'name' => 'Original Name',
+        'email' => 'original@example.com',
+    ]);
+
+    $this->actingAs($user)
+        ->withPrecognition()
+        ->withHeader('Precognition-Validate-Only', 'name')
+        ->patch(route('profile.update'), [
+            'name' => 'Updated Name',
+            'email' => $user->email,
+            'phone' => '',
+        ])
+        ->assertSuccessfulPrecognition();
+
+    expect($user->refresh()->name)->toBe('Original Name');
+});
