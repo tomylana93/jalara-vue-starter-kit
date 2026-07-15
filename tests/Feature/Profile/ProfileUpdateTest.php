@@ -258,3 +258,26 @@ test('profile precognition succeeds without updating the user', function (): voi
 
     expect($user->refresh()->name)->toBe('Original Name');
 });
+
+test('precognitive validation failures render as json instead of a redirect', function (): void {
+    // Guards the bootstrap/app.php shouldRenderJsonWhen() predicate: this app
+    // overrides the framework default to only render JSON for api/* or
+    // expectsJson() requests, so precognitive validation failures would be
+    // redirected (302) without the added isPrecognitive() branch, breaking the
+    // Precognition client contract.
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)
+        ->withPrecognition()
+        ->withHeader('Precognition-Validate-Only', 'name')
+        ->patch(route('profile.update'), [
+            'name' => '',
+            'email' => $user->email,
+            'phone' => '',
+        ]);
+
+    $response->assertUnprocessable();
+    $response->assertHeader('content-type', 'application/json');
+
+    expect($response->headers->get('location'))->toBeNull();
+});

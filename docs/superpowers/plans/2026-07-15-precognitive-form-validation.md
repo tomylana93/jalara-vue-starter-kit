@@ -23,6 +23,7 @@
 
 ## File Structure
 
+- `bootstrap/app.php` — extend the app's custom `shouldRenderJsonWhen` predicate with `|| $request->isPrecognitive()`. This app overrides the framework default to render JSON only for `api/*` or `expectsJson()` requests; without this branch, precognitive validation failures are redirected (302) instead of returning JSON 422, breaking the Precognition client contract. Regression coverage: `tests/Feature/Profile/ProfileUpdateTest.php` — "precognitive validation failures render as json instead of a redirect". `isPrecognitive()` reads a request attribute set only by the `precognitive` middleware, so this is a verified no-op for all non-precognitive flows.
 - `routes/profile.php` — attach Precognition and throttling to the authenticated profile PATCH route.
 - `routes/settings.php` — attach Precognition and throttling to the authenticated, verified, policy-protected general-settings PATCH route.
 - `tests/Feature/Profile/ProfileUpdateTest.php` — prove profile Precognition validates and never updates the user.

@@ -4,8 +4,10 @@ use App\Enums\Permission;
 use App\Enums\SiteLocale;
 use App\Models\User;
 use App\Settings\GeneralSettings;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 
 beforeEach(function (): void {
+    $this->withoutMiddleware(PreventRequestForgery::class);
     $this->artisan('auth:sync-authorization');
 });
 
@@ -65,6 +67,7 @@ test('a user without manage settings cannot make a precognitive general settings
 test('general settings precognition returns field errors without persisting settings', function (): void {
     $user = User::factory()->create();
     $user->givePermissionTo(Permission::ManageSettings->value);
+
     $settings = app(GeneralSettings::class);
     $originalSiteName = $settings->site_name;
 
@@ -85,6 +88,7 @@ test('general settings precognition returns field errors without persisting sett
 test('general settings precognition succeeds without persisting settings', function (): void {
     $user = User::factory()->create();
     $user->givePermissionTo(Permission::ManageSettings->value);
+
     $settings = app(GeneralSettings::class);
     $originalSiteName = $settings->site_name;
 
