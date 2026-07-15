@@ -1,0 +1,90 @@
+version: 1
+
+system_of_record: github
+base_branch: dev
+
+principles:
+  - one_task_one_orchestrator
+  - one_branch_one_writer
+  - parallel_read_only_agents_only
+  - cross_provider_review
+  - evidence_before_completion
+
+modes:
+  express:
+    risk_score: [0, 2]
+    phases:
+      - classify
+      - discover
+      - implement
+      - targeted_gate
+      - independent_review
+      - pull_request
+  standard:
+    risk_score: [3, 6]
+    phases:
+      - classify
+      - discover
+      - short_grill
+      - implementation_brief
+      - implement
+      - local_gate
+      - independent_review
+      - pull_request
+      - ci
+  critical:
+    risk_score: [7, 12]
+    phases:
+      - classify
+      - research
+      - full_grill
+      - domain_decisions
+      - specification
+      - tickets
+      - human_plan_approval
+      - implement
+      - adversarial_review
+      - full_gate
+      - human_merge_approval
+
+states:
+  success:
+    - new
+    - classified
+    - context_ready
+    - decisions_ready
+    - spec_ready
+    - implementing
+    - local_gates_pass
+    - review_pass
+    - pr_open
+    - ci_pass
+    - human_approved
+    - merged
+  blocked:
+    - blocked_information
+    - blocked_decision
+    - blocked_environment
+    - gate_failed
+    - review_changes_requested
+    - human_required
+
+autofix:
+  safe_commands:
+    - vendor/bin/pint --dirty --format agent
+    - pnpm run lint
+    - pnpm run format
+  guarded_commands:
+    - composer refactor
+  maximum_fix_cycles: 2
+
+contracts:
+  task_packet: .agents/contracts/task-packet.md
+  handoff: .agents/contracts/handoff.md
+  review_finding: .agents/contracts/review-finding.md
+
+policies:
+  risk: .agents/policies/risk.yaml
+  routing: .agents/policies/routing.yaml
+  approvals: .agents/policies/approvals.yaml
+  tools: .agents/policies/tools.yaml
