@@ -13,6 +13,7 @@ import type { CardItem } from '@/types';
 const { trans } = useTrans();
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
         breadcrumbs: [
             {

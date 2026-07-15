@@ -31,6 +31,7 @@
         "eslint-import-resolver-typescript": "^4.4.5",
         "eslint-plugin-import-x": "^4.17.1",
         "eslint-plugin-vue": "^10.9.2",
+        "playwright": "^1.61.1",
         "prettier": "^3.4.2",
         "prettier-plugin-tailwindcss": "^0.6.11",
         "typescript": "^5.2.2",

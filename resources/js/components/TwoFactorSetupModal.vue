@@ -259,6 +259,7 @@ watch(
                                     :maxlength="6"
                                     :disabled="processing"
                                     autofocus
+                                    aria-label="One-time authentication code"
                                 >
                                     <InputOTPGroup>
                                         <InputOTPSlot

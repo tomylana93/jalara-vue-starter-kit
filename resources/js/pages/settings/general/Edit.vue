@@ -36,6 +36,7 @@ const props = defineProps<Props>();
 const { trans } = useTrans();
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
         breadcrumbs: [
             {

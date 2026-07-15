@@ -70,6 +70,7 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                             :maxlength="6"
                             :disabled="processing"
                             autofocus
+                            aria-label="One-time authentication code"
                         >
                             <InputOTPGroup>
                                 <InputOTPSlot
@@ -109,6 +110,7 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                     name="recovery_code"
                     type="text"
                     placeholder="Enter recovery code"
+                    aria-label="Recovery code"
                     :autofocus="showRecoveryInput"
                 />
                 <InputError :message="errors.recovery_code" />
