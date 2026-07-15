@@ -1,0 +1,67 @@
+version: 1
+
+providers:
+  openai:
+    strengths:
+      - orchestration
+      - architecture
+      - debugging
+      - ci_and_release
+  anthropic:
+    strengths:
+      - complex_implementation
+      - security_review
+      - domain_reasoning
+  google:
+    strengths:
+      - frontend
+      - mechanical_refactor
+      - fast_codebase_scouting
+
+rules:
+  express:
+    minimum_providers: 2
+    require_cross_provider_review: true
+  standard:
+    minimum_providers: 2
+    require_cross_provider_review: true
+  critical:
+    minimum_providers: 3
+    require_cross_provider_review: true
+    require_adversarial_reviewer: true
+
+constraints:
+  - writer_must_not_be_final_reviewer
+  - only_one_writer_may_modify_a_branch_at_a_time
+  - parallel_agents_must_be_read_only
+  - provider_selection_must_follow_task_risk_not_preference
+
+initial_routes:
+  architecture_and_spec:
+    primary: openai
+    challenger: anthropic
+    reviewer: google
+  complex_feature:
+    primary: anthropic
+    challenger: openai
+    reviewer: google
+  debugging_and_race_conditions:
+    primary: openai
+    challenger: anthropic
+    reviewer: google
+  mechanical_refactor:
+    primary: google
+    challenger: openai
+    reviewer: anthropic
+  frontend_ui:
+    primary: google
+    challenger: anthropic
+    reviewer: openai
+  security_auth:
+    primary: anthropic
+    challenger: openai
+    reviewer: google
+  release_ci:
+    primary: openai
+    challenger: google
+    reviewer: anthropic
