@@ -6,9 +6,7 @@ return [
         'title' => 'Settings',
         'heading' => 'Settings',
         'description' => 'Manage your application configuration.',
-        'general' => [
-            'title' => 'General',
-            'description' => 'Application name, description, and default language.',
+        'action' => [
             'open' => 'Open',
         ],
     ],

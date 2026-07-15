@@ -12,3 +12,10 @@ export type NavItem = {
     icon?: LucideIcon;
     isActive?: boolean;
 };
+
+export type CardItem = {
+    title: string;
+    description: string;
+    href: NonNullable<InertiaLinkProps['href']>;
+    icon?: LucideIcon;
+};

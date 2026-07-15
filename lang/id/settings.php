@@ -6,9 +6,7 @@ return [
         'title' => 'Pengaturan',
         'heading' => 'Pengaturan',
         'description' => 'Kelola konfigurasi aplikasi Anda.',
-        'general' => [
-            'title' => 'Umum',
-            'description' => 'Nama aplikasi, deskripsi, dan bahasa default.',
+        'action' => [
             'open' => 'Buka',
         ],
     ],

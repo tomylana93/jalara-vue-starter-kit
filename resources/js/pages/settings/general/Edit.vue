@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
-import GeneralSettingsController from '@/actions/App/Http/Controllers/Settings/GeneralSettingsController';
-import Heading from '@/components/Heading.vue';
+import { Form, Head } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
+import PageWrapper from '@/components/PageWrapper.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -16,7 +21,10 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useTrans } from '@/composables/useTrans';
+import { index as settingsIndex } from '@/routes/settings';
+import { edit as generalEdit } from '@/routes/settings/general';
 import type { GeneralSettings, SelectOption } from '@/types';
+import { store } from '@/actions/App/Http/Controllers/Settings/GeneralSettingsController';
 
 type Props = {
     generalSettings: GeneralSettings;
@@ -31,45 +39,39 @@ defineOptions({
     layout: {
         breadcrumbs: [
             {
+                title: 'Settings',
+                href: settingsIndex(),
+            },
+            {
                 title: 'General settings',
-                href: GeneralSettingsController.edit.url(),
+                href: generalEdit(),
             },
         ],
     },
 });
-
-type GeneralSettingsFormData = {
-    site_name: string;
-    site_description: string;
-    site_locale: string;
-};
-
-const form = useForm<GeneralSettingsFormData>({
-    site_name: props.generalSettings.site_name,
-    site_description: props.generalSettings.site_description,
-    site_locale: props.generalSettings.site_locale,
-});
-
-function submit(): void {
-    form.submit(GeneralSettingsController.update(), { preserveScroll: true });
-}
 </script>
 
 <template>
     <Head :title="trans('settings.general.title')" />
 
-    <h1 class="sr-only">{{ trans('settings.general.title') }}</h1>
+    <PageWrapper
+        :title="trans('settings.general.heading')"
+        :description="trans('settings.general.description')"
+    >
+        <Form
+        v-bind="store.form(props.generalSettings)" 
+        class="flex flex-col gap-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>{{
+                        trans('settings.general.heading')
+                    }}</CardTitle>
+                    <CardDescription>{{
+                        trans('settings.general.description')
+                    }}</CardDescription>
+                </CardHeader>
 
-    <div class="flex flex-col space-y-6">
-        <Heading
-            variant="small"
-            :title="trans('settings.general.heading')"
-            :description="trans('settings.general.description')"
-        />
-
-        <Card class="max-w-2xl">
-            <CardContent>
-                <form class="space-y-6" @submit.prevent="submit">
+                <CardContent class="flex flex-col gap-6">
                     <div class="grid gap-2">
                         <Label for="site_name">{{
                             trans('settings.general.label.site_name')
@@ -141,8 +143,8 @@ function submit(): void {
                             {{ trans('settings.general.action.save') }}
                         </Button>
                     </div>
-                </form>
-            </CardContent>
-        </Card>
-    </div>
+                </CardContent>
+            </Card>
+        </form>
+    </PageWrapper>
 </template>

@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import Heading from '@/components/Heading.vue';
-import {
-    Card,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Wrench } from '@lucide/vue';
+import { computed } from 'vue';
+import PageWrapper from '@/components/PageWrapper.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { useTrans } from '@/composables/useTrans';
 import { index as settingsIndex } from '@/routes/settings';
 import { edit as generalEdit } from '@/routes/settings/general';
+import type { CardItem } from '@/types';
 
 const { trans } = useTrans();
 
@@ -23,31 +22,45 @@ defineOptions({
         ],
     },
 });
+
+const settingsCards = computed<CardItem[]>(() => [
+    {
+        title: trans('settings.general.title'),
+        description: trans('settings.general.description'),
+        href: generalEdit(),
+        icon: Wrench,
+    },
+]);
 </script>
 
 <template>
     <Head :title="trans('settings.index.title')" />
 
-    <h1 class="sr-only">{{ trans('settings.index.heading') }}</h1>
-
-    <div class="flex flex-col space-y-6">
-        <Heading
-            variant="small"
-            :title="trans('settings.index.heading')"
-            :description="trans('settings.index.description')"
-        />
-
-        <Link :href="generalEdit()" class="block max-w-xl">
-            <Card class="transition-colors hover:bg-accent/50">
-                <CardHeader>
-                    <CardTitle>{{
-                        trans('settings.index.general.title')
-                    }}</CardTitle>
-                    <CardDescription>{{
-                        trans('settings.index.general.description')
-                    }}</CardDescription>
-                </CardHeader>
+    <PageWrapper
+        :title="trans('settings.index.heading')"
+        :description="trans('settings.index.description')"
+    >
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <Card
+                v-for="item in settingsCards"
+                :key="item.title"
+                class="flex h-full flex-col"
+            >
+                <CardContent class="flex flex-1 items-start gap-4">
+                    <component :is="item.icon" class="mt-0.5 size-6" />
+                    <div class="flex flex-col gap-1">
+                        <h3 class="text-sm font-medium">{{ item.title }}</h3>
+                        <p class="text-sm text-muted-foreground">
+                            {{ item.description }}
+                        </p>
+                    </div>
+                </CardContent>
+                <CardFooter class="pt-0">
+                    <Button :as="Link" :href="item.href">
+                        {{ trans('settings.index.action.open') }}
+                    </Button>
+                </CardFooter>
             </Card>
-        </Link>
-    </div>
+        </div>
+    </PageWrapper>
 </template>
