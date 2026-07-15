@@ -61,7 +61,8 @@ defineOptions({
         <Form
             v-bind="update.form()"
             class="flex flex-col gap-6"
-            #default="{ errors, processing }"
+            :validation-timeout="750"
+            #default="{ errors, invalid, validate, processing }"
         >
             <Card>
                 <CardHeader>
@@ -86,6 +87,8 @@ defineOptions({
                             :placeholder="
                                 trans('settings.general.placeholder.site_name')
                             "
+                            :aria-invalid="invalid('site_name')"
+                            @blur="validate('site_name')"
                         />
                         <InputError :message="errors.site_name" />
                     </div>
@@ -106,6 +109,8 @@ defineOptions({
                                     'settings.general.placeholder.site_description',
                                 )
                             "
+                            :aria-invalid="invalid('site_description')"
+                            @blur="validate('site_description')"
                         />
                         <InputError :message="errors.site_description" />
                     </div>
@@ -118,7 +123,12 @@ defineOptions({
                             name="site_locale"
                             :default-value="props.generalSettings.site_locale"
                         >
-                            <SelectTrigger id="site_locale" class="w-full">
+                            <SelectTrigger
+                                id="site_locale"
+                                class="w-full"
+                                :aria-invalid="invalid('site_locale')"
+                                @blur="validate('site_locale')"
+                            >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
