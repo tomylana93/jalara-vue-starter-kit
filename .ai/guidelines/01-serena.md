@@ -4,6 +4,8 @@ The Serena MCP server provides semantic code navigation, reference analysis, pre
 
 All participating AI providers connect to the same Serena project. This provides shared repository intelligence and durable context, but it does **not** provide file locking, symbol locking, branch locking, task ownership, or concurrency control.
 
+This file is the single source of truth for Serena usage, fixed-point discipline, memory rules, and the canonical pre-flight evidence block. Other guidelines reference these sections instead of duplicating them.
+
 ## Session Start — Mandatory First Actions
 
 Before any Bash, Read, grep, repository search, file operation, or code modification, call these two Serena tools in this exact order:
@@ -15,46 +17,47 @@ Only these two calls are allowed before initialization completes.
 
 Starting repository work without completing both calls is a workflow violation, even when the requested change appears trivial.
 
-After initialization, confirm:
+### Precedence with skill frameworks
+
+Serena initialization always comes first. Immediately after both calls complete — and before any other exploration or modification — invoke the skills relevant to the task (process skills such as `brainstorming` or `systematic-debugging` first, then domain skills). A skill framework's "invoke a skill before any action" rule applies to everything **except** the two Serena initialization calls above. This ordering resolves the conflict; neither rule is waived.
+
+After initialization, read-only exploration may begin. Before the first file or code modification, post the canonical pre-flight block below.
+
+## Pre-Flight Evidence — Canonical Block
+
+This is the single canonical pre-flight block for all agents and all guidelines. Do not maintain divergent copies.
 
 ```text
-Serena:
-- Project activated: yes
-- Initial instructions read: yes
+---
+Pre-flight:
 - Role: orchestrator|writer|scout|reviewer
-- Write access: yes|no
+- Provider:
+- Classification: Routine|Standard|Deep
 - Fixed point: <commit-sha>
-- Owned areas: <files, directories, or symbols>
+- Branch/worktree:
+- Write access: yes|no
+- Owned files or symbols:
+- Serena: activated, initial instructions read
+- Memories read: <names> or none
+- Skills: <names> or none
+- Docs: Boost <queries> | Context7 <libraries> | not needed
+- Runtime inspection: database schema | database query | browser logs | none
+- UI components checked: yes | no UI involved
+- Ownership conflicts: none|blocked
+---
 ```
 
-If the task does not yet have an assigned role, fixed point, or ownership boundary, remain read-only until the orchestrator defines them.
+Rules:
+
+* scouts and reviewers use the same block and must declare `Write access: no`;
+* the block must reflect actual tool use — do not mark a tool as used before calling it;
+* if the task has no assigned role, fixed point, or ownership boundary yet, remain read-only until the orchestrator defines them.
 
 ## Shared Serena Is Not a Concurrency Lock
 
-Multiple agents may use the same Serena MCP project concurrently for read-only work.
+Multiple agents may use the same Serena MCP project concurrently for read-only work: exploring symbols, tracing references, locating implementations, inspecting patterns and tests, reviewing code, researching architecture, and reading project memories.
 
-Safe parallel Serena activities include:
-
-* exploring symbols;
-* tracing references;
-* locating implementations;
-* inspecting existing patterns;
-* analyzing tests;
-* reviewing code;
-* researching architecture;
-* reading project memories.
-
-Sharing Serena does not make concurrent writes safe.
-
-Serena does not prevent two agents from:
-
-* editing the same file;
-* replacing the same symbol;
-* creating conflicting migrations;
-* changing the same route;
-* modifying shared configuration;
-* overwriting generated files;
-* updating the same memory with incompatible information.
+Sharing Serena does not make concurrent writes safe. Serena does not prevent two agents from editing the same file or symbol, creating conflicting migrations, changing the same route, modifying shared configuration, overwriting generated files, or updating the same memory with incompatible information.
 
 Therefore:
 
@@ -67,17 +70,7 @@ Therefore:
 
 ## Fixed-Point Discipline
 
-Before parallel agents begin, the orchestrator must declare the Git commit SHA used as the shared fixed point.
-
-Every agent must report:
-
-```text
-Fixed point: <commit-sha>
-Current branch or worktree: <name>
-Role: orchestrator|writer|scout|reviewer
-Write access: yes|no
-Owned areas: <files, directories, or symbols>
-```
+Before parallel agents begin, the orchestrator must declare the Git commit SHA used as the shared fixed point. Every agent reports it in the canonical pre-flight block above.
 
 An agent must stop before writing when:
 
@@ -112,12 +105,6 @@ Do not use `grep`, `Bash cat`, or broad full-file reads as the default method fo
 ❌ grep -rn "AppearanceTabs" resources/js
 ✅ mcp__serena__find_referencing_symbols("AppearanceTabs")
 
-❌ cat -n FrontendLocaleExporter.php
-✅ mcp__serena__find_symbol("FrontendLocaleExporter", depth=2)
-
-❌ grep -rEln "lang:export|LangExport" app
-✅ mcp__serena__search_for_pattern("lang:export", path="app")
-
 ❌ Read an entire large file to locate one method
 ✅ mcp__serena__find_symbol("methodName", include_body=true)
 
@@ -129,14 +116,7 @@ Do not use `grep`, `Bash cat`, or broad full-file reads as the default method fo
 
 ### Read-only agents
 
-Orchestrators, scouts, and reviewers may:
-
-* inspect symbols;
-* trace references;
-* search patterns;
-* inspect memories;
-* analyze architecture;
-* report findings.
+Orchestrators, scouts, and reviewers may inspect symbols, trace references, search patterns, inspect memories, analyze architecture, and report findings.
 
 They must not call write-capable Serena operations unless the orchestrator explicitly reassigns them as the writer.
 
@@ -224,36 +204,7 @@ For cross-cutting renames or interface changes, one writer must own the complete
 
 Generated files, route helpers, dependency manifests, migrations, and shared type definitions must have a single designated owner.
 
-## Evidence Requirement
-
-Each agent must include Serena usage in its pre-flight evidence:
-
-```text
-Serena:
-- Activated: yes
-- Initial instructions read: yes
-- Role:
-- Write access:
-- Fixed point:
-- Owned areas:
-- Memories read:
-- Symbol tools used:
-- Ownership conflict: none|blocked
-```
-
-At handoff, a writer must report:
-
-```text
-Serena handoff:
-- Symbols inspected:
-- Symbols modified:
-- References verified:
-- Memories changed:
-- Ownership boundary respected: yes
-- Fixed point or final commit:
-```
-
-Confidence is not evidence. Claims such as “the change should be safe” must be supported by reference inspection, tests, or both.
+Confidence is not evidence. Claims such as "the change should be safe" must be supported by reference inspection, tests, or both.
 
 ## Fallback — Serena MCP Unavailable
 

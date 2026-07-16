@@ -4,11 +4,11 @@ This repository uses three AI providers as a coordinated engineering team:
 
 * **OpenAI agent**: orchestration, architecture, planning, difficult debugging, CI, and release analysis.
 * **Anthropic agent**: complex implementation, domain logic, security-sensitive work, and code review.
-* **Google agent**: codebase scouting, frontend implementation, mechanical refactoring, and fast verification.
+* **Google agent**: codebase scouting, frontend implementation, mechanical refactoring, and fast verification. It runs via the Antigravity CLI, which reads `AGENTS.md` — the same generated content as `CLAUDE.md`, so no separate instruction file is needed.
 
 These assignments are defaults based on capability, not permanent rankings. The developer may override them for a specific task.
 
-All agents share the same Serena MCP project. Serena provides shared code intelligence and durable project context, but it is **not a concurrency lock**. Multiple agents seeing the same symbols does not make simultaneous edits safe.
+All agents share the same Serena MCP project. Session start, fixed-point discipline, memory rules, and the canonical pre-flight block are defined in `.ai/guidelines/01-serena.md` — this file does not restate them.
 
 ---
 
@@ -23,7 +23,7 @@ Every task follows these rules:
 5. The final reviewer must be different from the writer.
 6. Completion requires evidence from tests and gates, not an agent's confidence statement.
 7. Do not expand scope to unrelated cleanup.
-8. Do not commit directly to `main` or `staging`.
+8. Do not commit directly to `main`.
 9. Permanent changes enter `dev` through a pull request unless the developer explicitly directs otherwise.
 10. Human approval is required for architecture, dependencies, destructive migrations, authentication, authorization, public contracts, and releases.
 
@@ -49,13 +49,7 @@ Responsibilities:
 * control the final integration;
 * report completion evidence.
 
-Default provider:
-
-* OpenAI for architecture, debugging, CI, release, or cross-cutting work;
-* Anthropic for domain-heavy or security-sensitive work;
-* Google for frontend-focused or mechanical work.
-
-Only one orchestrator is active for a task.
+Only one orchestrator is active for a task. The orchestrator remains read-only unless also explicitly assigned as the writer or integrator.
 
 ### Writer
 
@@ -76,31 +70,15 @@ The writer must not act as the final reviewer.
 
 Scouts are read-only agents that run in parallel.
 
-Typical assignments:
+Typical assignments: locate relevant symbols and call sites, identify existing patterns, inspect tests, inspect database structure, research framework documentation, analyze regression risks, propose implementation boundaries.
 
-* locate relevant symbols and call sites;
-* identify existing patterns;
-* inspect tests;
-* inspect database structure;
-* research framework documentation;
-* analyze regression risks;
-* propose implementation boundaries.
-
-Scouts must not edit files or create competing implementations on the writer's branch.
+Scouts must not edit files, install components, change dependencies, update generated files, or create competing implementations on the writer's branch.
 
 ### Reviewer
 
 Reviewers are read-only.
 
-They inspect:
-
-* acceptance-criteria compliance;
-* regressions;
-* security and data integrity;
-* existing conventions;
-* test coverage;
-* unnecessary complexity;
-* scope expansion.
+They inspect: acceptance-criteria compliance, regressions, security and data integrity, existing conventions, test coverage, unnecessary complexity, and scope expansion.
 
 A reviewer returns findings to the writer. The reviewer does not silently fix the code.
 
@@ -118,71 +96,23 @@ Responsibilities:
 
 ---
 
-## 3. Shared Serena rules
+## 3. Provider routing
 
-Every agent must begin with:
+| Provider  | Primary strengths                                                              | Preferred roles                                                    |
+| --------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| OpenAI    | orchestration, architecture, difficult debugging, concurrency, CI and releases | orchestrator, architecture challenger, debugging writer, integrator |
+| Anthropic | complex implementation, domain reasoning, security-sensitive code, deep review | backend writer, domain/security reviewer, architecture challenger   |
+| Google    | fast scouting, frontend and UI work, mechanical refactoring, broad inspection  | frontend writer, scout, mechanical-refactor writer, UI reviewer     |
 
-1. `activate_project`
-2. `initial_instructions`
-
-No Bash, broad file read, grep, edit, or write operation may occur before these two calls complete.
-
-### Shared Serena usage
-
-Serena is used for:
-
-* symbol discovery;
-* reference tracing;
-* implementation lookup;
-* precise code navigation;
-* architectural memories;
-* durable repository conventions.
-
-Serena must not be treated as:
-
-* a file lock;
-* a branch lock;
-* a substitute for Git;
-* a task queue;
-* a guarantee that another agent is not editing the same code.
-
-### Fixed-point rule
-
-Before parallel work begins, the orchestrator records the Git commit SHA used as the fixed point.
-
-Every participating agent must report:
+The safest default assignment:
 
 ```text
-Fixed point: <commit-sha>
-Role: orchestrator|writer|scout|reviewer
-Assignment: <bounded task>
-Write access: yes|no
-Owned areas: <files, directories, or symbols>
+OpenAI       -> orchestrator and architecture
+Anthropic    -> primary writer
+Google       -> read-only scout and final frontend/repository reviewer
 ```
 
-An agent must stop if its checkout no longer matches the declared fixed point and the difference has not been coordinated.
-
-### Serena memory ownership
-
-Durable memories may contain:
-
-* architecture decisions;
-* domain invariants;
-* project conventions not obvious from code;
-* changed tooling or release procedures.
-
-Memories must not contain:
-
-* temporary task status;
-* speculative findings;
-* full code snippets;
-* secrets;
-* duplicated framework documentation;
-* information easily rediscovered from code.
-
-Only the orchestrator or an explicitly assigned agent may create or modify durable shared memories.
-
-For task-local coordination, prefer the GitHub issue, task handoff, or agent response. Do not turn Serena memory into a shared chat room.
+The actual assignment must follow task characteristics rather than provider preference. Google may perform Deep work only when the selected model has sufficient reasoning capability and the orchestrator explicitly assigns it — provider names alone do not determine permission; task risk and actual model capability do.
 
 ---
 
@@ -200,37 +130,15 @@ Use when all conditions apply:
 * limited blast radius;
 * acceptance criteria are clear.
 
-Examples:
+Examples: text or copy changes, isolated styling, simple component reuse, mechanical rename with known references, formatting or lint fixes, a small bug with an obvious cause.
 
-* text or copy changes;
-* isolated styling;
-* simple component reuse;
-* mechanical rename with known references;
-* formatting or lint fixes;
-* a small bug with an obvious cause.
-
-Routine work may use:
-
-* one writer;
-* one parallel scout or reviewer when useful;
-* targeted tests;
-* standard finishing gate.
-
-Routine tasks do not require the workflow to stop merely to ask for classification approval.
+Routine work may use one writer, one parallel scout or reviewer when useful, targeted tests, and the standard finishing gate. Routine tasks do not require the workflow to stop merely to ask for classification approval.
 
 ### Standard
 
 Use when the task involves normal feature or bug work with moderate risk.
 
-Examples:
-
-* new CRUD following an existing pattern;
-* additive migrations;
-* frontend and backend changes in one feature;
-* changes across several files;
-* non-trivial validation;
-* integration with an already installed package;
-* refactoring behavior without changing architecture.
+Examples: new CRUD following an existing pattern, additive migrations, frontend and backend changes in one feature, changes across several files, non-trivial validation, integration with an already installed package, refactoring behavior without changing architecture.
 
 Standard work requires:
 
@@ -278,48 +186,7 @@ Parallelism is allowed only when assignments do not conflict.
 
 ### Safe parallel work
 
-Agents may safely run these jobs concurrently:
-
-* architecture analysis;
-* existing-pattern discovery;
-* documentation research;
-* test-gap analysis;
-* security review;
-* frontend design analysis;
-* database-schema inspection;
-* CI or deployment analysis;
-* read-only code review.
-
-Example:
-
-```text
-OpenAI:
-- orchestrate task;
-- define architecture and acceptance criteria;
-- inspect cross-module impact.
-
-Anthropic:
-- inspect domain invariants and security risks;
-- challenge the proposed architecture;
-- later implement the approved backend changes.
-
-Google:
-- inspect frontend patterns and affected components;
-- identify reusable shadcn components;
-- later review or implement a separate frontend slice.
-```
-
-### Default implementation model
-
-The safest default is:
-
-```text
-OpenAI       -> orchestrator and architecture
-Anthropic    -> primary writer
-Google       -> read-only scout and final frontend/repository reviewer
-```
-
-The actual assignment must follow task characteristics rather than provider preference.
+Agents may safely run these jobs concurrently: architecture analysis, existing-pattern discovery, documentation research, test-gap analysis, security review, frontend design analysis, database-schema inspection, CI or deployment analysis, read-only code review.
 
 ### Multiple parallel writers
 
@@ -356,14 +223,12 @@ Integrator only:
 
 Never allow concurrent writers to modify:
 
-* the same file;
-* the same class or Vue component;
+* the same file, class, or Vue component;
 * migrations;
 * route files;
 * `composer.json` or `composer.lock`;
 * `package.json` or `pnpm-lock.yaml`;
-* authentication configuration;
-* authorization catalogs;
+* authentication configuration or authorization catalogs;
 * generated Wayfinder files;
 * shared types used by both frontend and backend;
 * the same tests;
@@ -373,67 +238,7 @@ When ownership overlaps, convert all but one agent to read-only review mode.
 
 ---
 
-## 6. Provider routing
-
-### OpenAI agent
-
-Primary strengths:
-
-* orchestration;
-* architecture;
-* specification;
-* difficult debugging;
-* concurrency analysis;
-* CI and release workflows;
-* cross-cutting refactors.
-
-Preferred roles:
-
-* orchestrator;
-* architecture challenger;
-* debugging writer;
-* release reviewer;
-* final integrator.
-
-### Anthropic agent
-
-Primary strengths:
-
-* complex implementation;
-* domain reasoning;
-* security-sensitive code;
-* long-context repository changes;
-* detailed review.
-
-Preferred roles:
-
-* backend writer;
-* domain-model reviewer;
-* security reviewer;
-* architecture challenger.
-
-### Google agent
-
-Primary strengths:
-
-* fast codebase scouting;
-* frontend and UI work;
-* mechanical refactoring;
-* pattern discovery;
-* broad read-only inspection.
-
-Preferred roles:
-
-* frontend writer;
-* scout;
-* mechanical-refactor writer;
-* UI reviewer.
-
-Google may perform Deep work only when the selected model has sufficient reasoning capability and the orchestrator explicitly assigns it. Provider names alone do not determine permission. Task risk and actual model capability do.
-
----
-
-## 7. Task startup
+## 6. Task startup
 
 The orchestrator starts every task with:
 
@@ -465,41 +270,11 @@ Agents do not need to stop immediately after classification unless:
 
 Repository facts must be inspected before asking the developer questions.
 
----
-
-## 8. Mandatory pre-flight evidence
-
-Before modifying files, each writer posts:
-
-```text
----
-Pre-flight:
-- Role: writer
-- Provider:
-- Classification:
-- Fixed point:
-- Branch/worktree:
-- Owned files or symbols:
-- Serena: activated and initial instructions read
-- Memories: <names> or not needed
-- Laravel Boost docs: used or not needed
-- Context7: used or not needed
-- Skills: <names>
-- UI components checked: yes or no UI involved
-- Acceptance criteria understood: yes
-- Conflicting writer ownership: none
----
-```
-
-A scout or reviewer uses the same block but declares:
-
-```text
-Write access: no
-```
+Before the first modification, every writer posts the canonical pre-flight block defined in `.ai/guidelines/01-serena.md` §Pre-Flight Evidence. Scouts and reviewers use the same block with `Write access: no`.
 
 ---
 
-## 9. Deep workflow
+## 7. Deep workflow
 
 ### Phase 1: Parallel discovery
 
@@ -518,60 +293,25 @@ Google:
 - frontend impact, existing UI patterns, and mechanical change map.
 ```
 
-Each agent returns:
-
-* repository evidence;
-* affected symbols;
-* risks;
-* alternatives;
-* recommendation;
-* unresolved decisions.
+Each agent returns: repository evidence, affected symbols, risks, alternatives, recommendation, unresolved decisions.
 
 ### Phase 2: Design
 
 The orchestrator combines findings into one design.
 
-The design must identify:
-
-* problem;
-* current behavior;
-* proposed behavior;
-* data model impact;
-* backend boundaries;
-* frontend boundaries;
-* authorization impact;
-* failure cases;
-* testing strategy;
-* migration and rollback strategy;
-* rejected alternatives.
+The design must identify: problem, current behavior, proposed behavior, data model impact, backend boundaries, frontend boundaries, authorization impact, failure cases, testing strategy, migration and rollback strategy, rejected alternatives.
 
 Conflicts between providers must be presented explicitly, not averaged into vague prose.
 
 ### Phase 3: Grill
 
-Use `/grill-me` to test:
-
-* hidden assumptions;
-* edge cases;
-* data integrity;
-* security boundaries;
-* concurrency;
-* rollback;
-* operational failure;
-* maintenance cost.
+Use `/grill-me` to test: hidden assumptions, edge cases, data integrity, security boundaries, concurrency, rollback, operational failure, maintenance cost.
 
 Material unresolved decisions require developer approval.
 
 ### Phase 4: Implementation assignment
 
-The orchestrator defines:
-
-* one primary writer;
-* optional isolated parallel writers;
-* exact file and symbol ownership;
-* integration order;
-* targeted tests;
-* review assignments.
+The orchestrator defines: one primary writer, optional isolated parallel writers, exact file and symbol ownership, integration order, targeted tests, review assignments.
 
 ### Phase 5: Implementation
 
@@ -609,7 +349,7 @@ The integrator resolves accepted findings and runs the full finishing gate.
 
 ---
 
-## 10. Routine and Standard workflows
+## 8. Routine and Standard workflows
 
 ### Routine workflow
 
@@ -642,7 +382,7 @@ A separate reviewer is optional for truly mechanical work.
 
 ---
 
-## 11. Finishing gate
+## 9. Finishing gate
 
 Run in this order:
 
@@ -662,22 +402,11 @@ Finishing gate:
 [ ] commit or pull request explicitly requested
 ```
 
-Run Wayfinder generation when any of these change:
-
-* `routes/*.php`;
-* controllers;
-* invokable actions;
-* route names or parameters.
-
-Generated files have one owner: the integrator or designated backend writer.
+Run Wayfinder generation when any of these change: `routes/*.php`, controllers, invokable actions, route names or parameters. Generated files have one owner: the integrator or designated backend writer.
 
 ### Gate failure
 
-Safe automatic fixes:
-
-* Pint;
-* ESLint fix;
-* Prettier.
+Safe automatic fixes: Pint, ESLint fix, Prettier.
 
 For logic, PHPStan, type, or test failures:
 
@@ -687,18 +416,11 @@ For logic, PHPStan, type, or test failures:
 4. rerun the smallest failing check;
 5. rerun the full gate.
 
-Stop after two or three unsuccessful cycles when:
-
-* the same failure remains;
-* the required fix changes architecture;
-* scope would expand;
-* another writer owns the affected area.
-
-Do not loop blindly.
+Stop after two or three unsuccessful cycles when the same failure remains, the required fix changes architecture, scope would expand, or another writer owns the affected area. Do not loop blindly.
 
 ---
 
-## 12. Handoff format
+## 10. Handoff format
 
 Every writer returns:
 
@@ -707,10 +429,12 @@ Handoff:
 - Task:
 - Provider:
 - Role:
-- Fixed point:
+- Fixed point or final commit:
 - Branch/worktree:
 - Scope completed:
 - Files changed:
+- Symbols inspected/modified:
+- References verified:
 - Tests added or updated:
 - Commands run:
 - Checks passed:
@@ -718,6 +442,7 @@ Handoff:
 - Known risks:
 - Unresolved issues:
 - Serena memories changed:
+- Ownership boundary respected: yes
 - Recommended next owner:
 ```
 
@@ -725,33 +450,37 @@ Every receiving agent verifies the fixed point and current diff before continuin
 
 ---
 
-## 13. Git and branch rules
+## 11. Git and branch rules
 
-Normal development flow:
+The canonical release process is documented in `docs/development-workflow.md`. Summary of the normal flow:
 
 ```text
 dev
-  -> task branch or provider worktree branch
-  -> integration branch when multiple writers are used
-  -> pull request to dev
-  -> dev to staging
-  -> staging to main
+  -> task branch (or provider worktree branch; integration branch when
+     multiple writers are used)
+  -> squash PR into dev (Conventional Commit title)
+  -> promotion merge-commit PR dev -> main
+  -> Release Please PR into main (owns CHANGELOG.md, version, tag, release)
+  -> merge-commit sync PR main -> dev
 ```
 
 Rules:
 
 * never let two writers share one working tree;
-* never use `dev`, `staging`, or `main` as an experimental writer branch;
+* never use `dev` or `main` as an experimental writer branch;
 * parallel writers branch from the same fixed point;
 * the integrator owns conflict resolution;
 * do not hide conflicts by accepting both implementations;
-* long-lived branch promotion uses merge commits;
-* direct pushes to `main` are forbidden;
+* temporary PR titles follow Conventional Commits (`feat` bumps minor, `fix` bumps patch, `!`/`BREAKING CHANGE` bumps major);
+* direct pushes to `main` and `dev` are forbidden; branch protection enforces this;
+* Release Please owns `CHANGELOG.md`, version metadata, tags, and GitHub Releases — never create these manually;
+* published `v*` tags are immutable; correct a bad release with a new patch version;
+* hotfixes flow `main -> hotfix/* -> main`, then synchronize `main -> dev`;
 * releases remain developer-controlled.
 
 ---
 
-## 14. Completion definition
+## 12. Completion definition
 
 A task is complete only when:
 
@@ -764,4 +493,4 @@ A task is complete only when:
 * the final diff contains no unrelated work;
 * required developer approvals are recorded.
 
-Statements such as “should work”, “looks correct”, or “I am confident” are not completion evidence.
+Statements such as "should work", "looks correct", or "I am confident" are not completion evidence.
