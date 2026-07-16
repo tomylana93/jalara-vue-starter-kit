@@ -7,7 +7,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class BrandingResolver
 {
-    /** @return array{icon: string, icon_dark: string, logo: string, logo_dark: string, favicon: string, auth_split_background: ?string} */
+    /** @return array{icon: string, icon_dark: string, logo: string, logo_dark: string, favicon: string, auth_split_background: string} */
     public function resolve(SiteBranding $branding): array
     {
         return [
@@ -25,7 +25,7 @@ final class BrandingResolver
                 $branding,
                 SiteBranding::AuthSplitBackground,
                 'auth_background_web',
-            ),
+            ) ?? '/assets/images/auth-bg.jpg',
         ];
     }
 
