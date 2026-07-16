@@ -41,5 +41,5 @@ test('it shares style and branding with every inertia response', function (): vo
             ->where('style.site_layout', 'sidebar')
             ->where('style.site_theme', 'zinc')
             ->where('style.site_font', 'inter')
-            ->where('branding.auth_split_background', null));
+            ->where('branding.auth_split_background', '/assets/images/auth-bg.jpg'));
 });
