@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Settings;
 
+use App\Data\StyleSettingsPayload;
 use App\Enums\SiteAuthLayout;
 use App\Enums\SiteFont;
 use App\Enums\SiteLayout;
@@ -37,25 +38,34 @@ class UpdateStyleSettingsRequest extends FormRequest
         return $rules;
     }
 
-    /** @return array<string, bool|string|null> */
-    public function payload(): array
+    public function payload(): StyleSettingsPayload
     {
-        $payload = [
+        return StyleSettingsPayload::fromArray([
             'site_logo_style' => $this->string('site_logo_style')->toString(),
             'site_auth_layout' => $this->string('site_auth_layout')->toString(),
             'site_layout' => $this->string('site_layout')->toString(),
             'site_theme' => $this->string('site_theme')->toString(),
             'site_font' => $this->string('site_font')->toString(),
-        ];
+            'icon_upload_id' => $this->uploadId('icon'),
+            'icon_remove' => $this->boolean('icon_remove'),
+            'icon_dark_upload_id' => $this->uploadId('icon_dark'),
+            'icon_dark_remove' => $this->boolean('icon_dark_remove'),
+            'logo_upload_id' => $this->uploadId('logo'),
+            'logo_remove' => $this->boolean('logo_remove'),
+            'logo_dark_upload_id' => $this->uploadId('logo_dark'),
+            'logo_dark_remove' => $this->boolean('logo_dark_remove'),
+            'favicon_upload_id' => $this->uploadId('favicon'),
+            'favicon_remove' => $this->boolean('favicon_remove'),
+            'auth_split_background_upload_id' => $this->uploadId('auth_split_background'),
+            'auth_split_background_remove' => $this->boolean('auth_split_background_remove'),
+        ]);
+    }
 
-        foreach ($this->assetFields() as $field) {
-            $payload["{$field}_upload_id"] = $this->filled("{$field}_upload_id")
-                ? $this->string("{$field}_upload_id")->toString()
-                : null;
-            $payload["{$field}_remove"] = $this->boolean("{$field}_remove");
-        }
-
-        return $payload;
+    private function uploadId(string $field): ?string
+    {
+        return $this->filled("{$field}_upload_id")
+            ? $this->string("{$field}_upload_id")->toString()
+            : null;
     }
 
     /** @return list<string> */

@@ -12,7 +12,7 @@ use Throwable;
 
 final class StageTemporaryUpload
 {
-    public function handle(User $user, UploadedFile $file, TemporaryUploadPurpose $purpose): TemporaryUpload
+    public function handle(User $user, UploadedFile $file, TemporaryUploadPurpose $purpose, ?string $brandingField = null): TemporaryUpload
     {
         $disk = PublicMediaDisk::name();
         $path = $file->store("temporary-uploads/{$user->id}/{$purpose->value}", ['disk' => $disk]);
@@ -21,6 +21,7 @@ final class StageTemporaryUpload
             return TemporaryUpload::query()->create([
                 'user_id' => $user->id,
                 'purpose' => $purpose,
+                'branding_field' => $brandingField,
                 'disk' => $disk,
                 'path' => $path,
                 'original_name' => $file->getClientOriginalName(),

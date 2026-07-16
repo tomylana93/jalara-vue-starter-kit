@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Actions\Profile;
+namespace App\Actions\Uploads;
 
 use App\Models\TemporaryUpload;
 
-final class PurgeExpiredAvatarUploads
+final class PruneTemporaryUploads
 {
     /**
-     * Delete expired temporary avatar uploads and return the number removed.
+     * Delete temporary uploads older than the retention period.
      */
-    public function handle(): int
+    public function handle(int $hours = 24): int
     {
         $deleted = 0;
 
         TemporaryUpload::query()
-            ->where('expires_at', '<=', now())
+            ->where('created_at', '<=', now()->subHours($hours))
             ->cursor()
             ->each(function (TemporaryUpload $upload) use (&$deleted): void {
                 $upload->delete();

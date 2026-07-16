@@ -24,7 +24,8 @@ test('manage settings can stage and cancel a branding image', function (): void 
 
     $upload = TemporaryUpload::query()->findOrFail($response->json('id'));
 
-    expect($upload->purpose)->toBe(TemporaryUploadPurpose::Branding);
+    expect($upload->purpose)->toBe(TemporaryUploadPurpose::Branding)
+        ->and($upload->branding_field)->toBe('auth_split_background');
 
     $this->actingAs($user)
         ->deleteJson("/settings/style/uploads/{$upload->id}")

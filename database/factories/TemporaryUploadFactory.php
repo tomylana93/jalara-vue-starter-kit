@@ -16,6 +16,7 @@ class TemporaryUploadFactory extends Factory
         return [
             'user_id' => User::factory(),
             'purpose' => TemporaryUploadPurpose::Branding,
+            'branding_field' => 'icon',
             'disk' => 'local',
             'path' => 'temporary-uploads/'.fake()->uuid().'.png',
             'original_name' => 'upload.png',

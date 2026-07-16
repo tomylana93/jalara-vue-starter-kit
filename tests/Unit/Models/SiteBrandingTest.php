@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\SiteBranding;
+use App\Support\Branding\SiteBrandingStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -14,6 +15,13 @@ test('it resolves one stable site branding owner', function (): void {
     $second = SiteBranding::singleton();
 
     expect($first->is($second))->toBeTrue()
+        ->and(SiteBranding::query()->count())->toBe(1);
+});
+
+test('the branding store caches the singleton within the application lifecycle', function (): void {
+    $store = app(SiteBrandingStore::class);
+
+    expect($store->get())->toBe($store->get())
         ->and(SiteBranding::query()->count())->toBe(1);
 });
 

@@ -23,6 +23,7 @@ class BrandingUploadController extends Controller
             $request->user(),
             $request->file('file'),
             TemporaryUploadPurpose::Branding,
+            $request->string('field')->toString(),
         );
 
         return response()->json([

@@ -3,10 +3,10 @@
 namespace App\Http\Middleware;
 
 use App\Enums\Permission;
-use App\Models\SiteBranding;
 use App\Settings\GeneralSettings;
 use App\Settings\StyleSettings;
 use App\Support\Branding\BrandingResolver;
+use App\Support\Branding\SiteBrandingStore;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -16,6 +16,7 @@ class HandleInertiaRequests extends Middleware
         private readonly GeneralSettings $generalSettings,
         private readonly StyleSettings $styleSettings,
         private readonly BrandingResolver $brandingResolver,
+        private readonly SiteBrandingStore $siteBrandingStore,
     ) {}
 
     /**
@@ -59,7 +60,7 @@ class HandleInertiaRequests extends Middleware
                 'site_theme' => $this->styleSettings->site_theme,
                 'site_font' => $this->styleSettings->site_font,
             ],
-            'branding' => fn (): array => $this->brandingResolver->resolve(SiteBranding::singleton()),
+            'branding' => fn (): array => $this->brandingResolver->resolve($this->siteBrandingStore->get()),
             'auth' => [
                 'user' => fn () => $user === null ? null : [
                     ...$user->toArray(),

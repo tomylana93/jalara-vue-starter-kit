@@ -27,6 +27,20 @@ test('it stages an owned upload with an explicit purpose', function (): void {
         ->and(Storage::disk('public')->exists($upload->path))->toBeTrue();
 });
 
+test('it removes the stored file when staging record creation fails', function (): void {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    TemporaryUpload::creating(fn () => throw new RuntimeException('database unavailable'));
+
+    expect(fn () => app(StageTemporaryUpload::class)->handle(
+        $user,
+        UploadedFile::fake()->image('avatar.jpg'),
+        TemporaryUploadPurpose::Avatar,
+    ))->toThrow(RuntimeException::class, 'database unavailable');
+
+    expect(Storage::disk('public')->allFiles("temporary-uploads/{$user->id}/avatar"))->toBeEmpty();
+});
+
 test('it only deletes a temporary upload for its owner and purpose', function (): void {
     Storage::fake('public');
     $owner = User::factory()->create();

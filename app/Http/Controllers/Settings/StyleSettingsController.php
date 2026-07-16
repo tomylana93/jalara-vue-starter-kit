@@ -13,6 +13,7 @@ use App\Http\Requests\Settings\UpdateStyleSettingsRequest;
 use App\Models\SiteBranding;
 use App\Settings\StyleSettings;
 use App\Support\Branding\BrandingResolver;
+use App\Support\Branding\SiteBrandingStore;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,8 +24,9 @@ class StyleSettingsController extends Controller
     public function edit(
         StyleSettings $settings,
         BrandingResolver $brandingResolver,
+        SiteBrandingStore $siteBrandingStore,
     ): Response {
-        $branding = SiteBranding::singleton();
+        $branding = $siteBrandingStore->get();
 
         return Inertia::render('settings/style/Edit', [
             'styleSettings' => [

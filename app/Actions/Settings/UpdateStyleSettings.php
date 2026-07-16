@@ -2,11 +2,13 @@
 
 namespace App\Actions\Settings;
 
+use App\Data\StyleSettingsPayload;
 use App\Enums\TemporaryUploadPurpose;
 use App\Models\SiteBranding;
 use App\Models\TemporaryUpload;
 use App\Models\User;
 use App\Settings\StyleSettings;
+use App\Support\Branding\SiteBrandingStore;
 use finfo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -15,16 +17,18 @@ use RuntimeException;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Throwable;
 
-final class UpdateStyleSettings
+final readonly class UpdateStyleSettings
 {
-    /** @param array<string, bool|string|null> $data */
-    public function handle(StyleSettings $settings, array $data, User $actor): void
+    public function __construct(private SiteBrandingStore $siteBrandingStore) {}
+
+    public function handle(StyleSettings $settings, StyleSettingsPayload $payload, User $actor): void
     {
+        $data = $payload->values;
         $uploads = $this->uploads($data, $actor);
         $this->validateStoredFiles($uploads);
 
         DB::transaction(function () use ($settings, $data, $uploads): void {
-            $branding = SiteBranding::singleton();
+            $branding = $this->siteBrandingStore->get();
             $created = [];
             $superseded = [];
 
@@ -108,6 +112,7 @@ final class UpdateStyleSettings
                 ->whereKey($id)
                 ->whereBelongsTo($actor)
                 ->where('purpose', TemporaryUploadPurpose::Branding->value)
+                ->where('branding_field', $field)
                 ->first();
 
             if (! $upload instanceof TemporaryUpload || $upload->expires_at->isPast()) {

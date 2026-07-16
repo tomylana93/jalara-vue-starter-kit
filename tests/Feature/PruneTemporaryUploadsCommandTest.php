@@ -12,31 +12,34 @@ beforeEach(function () {
     Storage::fake('local');
 });
 
-test('it purges expired temporary avatar uploads and their stored files', function () {
+test('it prunes temporary uploads older than 24 hours and their stored files', function () {
     $expiredUpload = TemporaryUpload::factory()->create([
         'purpose' => TemporaryUploadPurpose::Avatar,
         'disk' => 'public',
         'path' => 'temporary-avatars/expired.jpg',
         'expires_at' => now()->subSecond(),
+        'created_at' => now()->subHours(25),
     ]);
     $expiresNowUpload = TemporaryUpload::factory()->create([
         'purpose' => TemporaryUploadPurpose::Avatar,
         'disk' => 'local',
         'path' => 'temporary-avatars/expires-now.webp',
         'expires_at' => now(),
+        'created_at' => now()->subHours(24),
     ]);
     $unexpiredUpload = TemporaryUpload::factory()->create([
         'purpose' => TemporaryUploadPurpose::Avatar,
         'disk' => 'public',
         'path' => 'temporary-avatars/unexpired.jpg',
         'expires_at' => now()->addSecond(),
+        'created_at' => now()->subHours(23),
     ]);
 
     Storage::disk('public')->put($expiredUpload->path, 'expired');
     Storage::disk('local')->put($expiresNowUpload->path, 'expires now');
     Storage::disk('public')->put($unexpiredUpload->path, 'unexpired');
 
-    $this->artisan('media:purge-expired-avatar-uploads')
+    $this->artisan('uploads:prune-temporary --hours=24')
         ->assertExitCode(0);
 
     expect($expiredUpload->fresh())->toBeNull()
@@ -54,9 +57,10 @@ test('it is idempotent when an expired upload file is already missing', function
         'disk' => 'local',
         'path' => 'temporary-avatars/missing.webp',
         'expires_at' => now()->subSecond(),
+        'created_at' => now()->subHours(25),
     ]);
 
-    $this->artisan('media:purge-expired-avatar-uploads')
+    $this->artisan('uploads:prune-temporary --hours=24')
         ->assertExitCode(0);
 
     expect($upload->fresh())->toBeNull();
@@ -68,6 +72,7 @@ test('it retains an expired upload when its stored file cannot be deleted', func
         'disk' => 'public',
         'path' => 'temporary-avatars/undeletable.webp',
         'expires_at' => now()->subSecond(),
+        'created_at' => now()->subHours(25),
     ]);
 
     $disk = mock(FilesystemAdapter::class);
@@ -76,17 +81,17 @@ test('it retains an expired upload when its stored file cannot be deleted', func
 
     Storage::shouldReceive('disk')->once()->with($upload->disk)->andReturn($disk);
 
-    expect(fn () => $this->artisan('media:purge-expired-avatar-uploads'))
+    expect(fn () => $this->artisan('uploads:prune-temporary --hours=24'))
         ->toThrow(RuntimeException::class, 'Unable to delete temporary upload file.');
 
     expect($upload->fresh())->not->toBeNull();
 });
 
-test('the expired avatar upload cleanup is scheduled daily without overlapping', function () {
+test('temporary upload pruning is scheduled hourly without overlapping', function () {
     $event = collect(app(Schedule::class)->events())
-        ->first(fn ($event) => str_contains($event->command, 'media:purge-expired-avatar-uploads'));
+        ->first(fn ($event) => str_contains($event->command, 'uploads:prune-temporary --hours=24'));
 
     expect($event)->not->toBeNull()
-        ->and($event->expression)->toBe('0 0 * * *')
+        ->and($event->expression)->toBe('0 * * * *')
         ->and($event->withoutOverlapping)->toBeTrue();
 });

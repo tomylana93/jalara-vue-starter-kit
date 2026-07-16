@@ -17,6 +17,7 @@ use RuntimeException;
  * @property string $id
  * @property string $user_id
  * @property TemporaryUploadPurpose $purpose
+ * @property string|null $branding_field
  * @property string $disk
  * @property string $path
  * @property string $original_name
@@ -27,6 +28,7 @@ use RuntimeException;
 #[Fillable([
     'user_id',
     'purpose',
+    'branding_field',
     'disk',
     'path',
     'original_name',

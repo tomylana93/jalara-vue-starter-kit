@@ -8,6 +8,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('media:purge-expired-avatar-uploads')
-    ->daily()
+Schedule::command('uploads:prune-temporary --hours=24')
+    ->hourly()
     ->withoutOverlapping();
