@@ -13,7 +13,7 @@ Before any Bash, Read, grep, repository search, file operation, or code modifica
 1. `activate_project` — activate the current repository in Serena.
 2. `initial_instructions` — read the project instruction manual.
 
-Only these two calls are allowed before initialization completes.
+Only these two calls are allowed before initialization completes, with one narrow exception: immediately before `activate_project`, run the read-only baseline check `git status --porcelain=v1 .serena/project.yml` so config drift caused by activation can be told apart from a pre-existing developer change. No other Git or file operation may precede initialization.
 
 Starting repository work without completing both calls is a workflow violation, even when the requested change appears trivial.
 
@@ -25,7 +25,12 @@ Serena initialization always comes first. Immediately after both calls complete 
 
 After `activate_project`, verify that the activated project root equals the current checkout (`git rev-parse --show-toplevel`). In multi-worktree parallel work, each writer activates its own worktree path — never the shared main checkout — otherwise Serena edits files outside the writer's branch.
 
-If activation regenerates or modifies `.serena/project.yml` (config drift, typically after a Serena version change), stop before writing: report the drift to the developer as its own change, and never bundle that diff into an unrelated task.
+After activation, compare `.serena/project.yml` against the pre-activation baseline:
+
+* **clean before, modified after** — the change is Serena-generated config drift (typically after a Serena version change): report it to the developer and commit or discard it as its own change before task work; never bundle it into an unrelated diff;
+* **already dirty before activation** — the change belongs to the developer: leave it untouched and mention it in the pre-flight evidence.
+
+Config drift does not block read-only work; it is a stop condition only for a writer about to commit while the drift is still mixed into the task diff.
 
 After initialization, read-only exploration may begin. Before the first file or code modification, post the canonical pre-flight block below.
 
@@ -242,7 +247,7 @@ Stop and report to the orchestrator when:
 
 * Serena initialization fails;
 * the activated Serena project root does not match the writer's current worktree;
-* activation modified `.serena/project.yml` (config drift);
+* activation modified `.serena/project.yml` relative to the pre-activation baseline and the drift has not yet been separated from the task diff;
 * the declared fixed point does not match the checkout;
 * another writer owns the required file or symbol;
 * the edit crosses an ownership boundary;

@@ -23,8 +23,8 @@ Every task follows these rules:
 5. Whenever a task requires independent review — always for Standard and Deep — the final reviewer must be different from the writer. Truly mechanical Routine work is the only exception (see §4).
 6. Completion requires evidence from tests and gates, not an agent's confidence statement.
 7. Do not expand scope to unrelated cleanup.
-8. Do not commit directly to `main`. Do not push directly to `main` or `dev` — both change only through pull requests, enforced by branch protection and the local `protect-main` hook.
-9. Permanent changes enter `dev` through a pull request unless the developer explicitly directs otherwise.
+8. Do not commit directly to `main`. Do not push directly to `main` or `dev` — both change only through pull requests. GitHub branch protection is the enforcement boundary; a best-effort local guard (`.claude/hooks/protect-main.py`) additionally blocks the common direct-push and main-commit forms in agent sessions but must not be relied on as complete enforcement.
+9. Permanent changes enter `dev` through a pull request unless the developer explicitly directs otherwise. In this repository the developer has given standing approval for direct commits on `dev`; the guard hook therefore reminds rather than blocks there. Pushing `dev` to the remote still requires a pull request.
 10. Human approval is required for architecture, dependencies, destructive migrations, authentication, authorization, public contracts, and releases.
 
 ---
