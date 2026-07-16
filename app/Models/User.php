@@ -179,7 +179,7 @@ class User extends Authenticatable implements HasMedia, PasskeyUser
     {
         $this->addMediaConversion('avatar')
             ->performOnCollections('avatar')
-            ->nonQueued()
+            ->queued()
             ->format('webp')
             ->fit(Fit::Crop, 256, 256);
     }
@@ -188,11 +188,13 @@ class User extends Authenticatable implements HasMedia, PasskeyUser
     {
         $avatar = $this->getFirstMedia('avatar');
 
-        if (! $avatar instanceof Media || ! $avatar->hasGeneratedConversion('avatar')) {
+        if (! $avatar instanceof Media) {
             return null;
         }
 
-        return $avatar->getUrl('avatar');
+        return $avatar->hasGeneratedConversion('avatar')
+            ? $avatar->getUrl('avatar')
+            : $avatar->getUrl();
     }
 
     /**

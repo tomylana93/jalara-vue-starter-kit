@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Profile;
 
 use App\Actions\Profile\DeleteTemporaryAvatarUpload;
-use App\Actions\Profile\StageTemporaryAvatarUpload;
 use App\Actions\Profile\TemporaryAvatarDeletionResult;
+use App\Actions\Uploads\StageTemporaryUpload;
+use App\Enums\TemporaryUploadPurpose;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Profile\StoreTemporaryAvatarUploadRequest;
 use Illuminate\Http\JsonResponse;
@@ -16,9 +17,13 @@ class AvatarUploadController extends Controller
     /**
      * Stage a temporary avatar upload.
      */
-    public function store(StoreTemporaryAvatarUploadRequest $request, StageTemporaryAvatarUpload $stageTemporaryAvatarUpload): JsonResponse
+    public function store(StoreTemporaryAvatarUploadRequest $request, StageTemporaryUpload $stageTemporaryUpload): JsonResponse
     {
-        $upload = $stageTemporaryAvatarUpload->handle($request->user(), $request->file('file'));
+        $upload = $stageTemporaryUpload->handle(
+            $request->user(),
+            $request->file('file'),
+            TemporaryUploadPurpose::Avatar,
+        );
 
         return response()->json([
             'id' => $upload->id,

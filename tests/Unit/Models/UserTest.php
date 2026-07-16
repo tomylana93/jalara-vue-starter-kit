@@ -5,7 +5,9 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\Conversions\Jobs\PerformConversionsJob;
 use Spatie\MediaLibrary\MediaCollections\Exceptions\FileCannotBeAdded;
 use Tests\TestCase;
 
@@ -47,8 +49,9 @@ test('users cast the login-security attributes', function () {
         ->and($user->suspended_until)->toBeInstanceOf(CarbonImmutable::class);
 });
 
-test('a user avatar collection is single-file and exposes its conversion URL', function () {
+test('a user avatar collection queues its conversion and exposes the original while pending', function () {
     Storage::fake('public');
+    Queue::fake();
     $user = User::factory()->create();
 
     expect($user->avatarUrl())->toBeNull();
@@ -59,7 +62,9 @@ test('a user avatar collection is single-file and exposes its conversion URL', f
     $user->refresh();
 
     expect($user->getMedia('avatar'))->toHaveCount(1)
-        ->and($user->avatarUrl())->toBe($user->getFirstMediaUrl('avatar', 'avatar'));
+        ->and($user->avatarUrl())->toBe($user->getFirstMediaUrl('avatar'));
+
+    Queue::assertPushed(PerformConversionsJob::class);
 });
 
 test('a user avatar collection rejects disallowed MIME types', function () {

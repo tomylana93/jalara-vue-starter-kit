@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import AppBrand from '@/components/AppBrand.vue';
 import {
     Card,
     CardContent,
@@ -30,11 +30,7 @@ const { trans } = useTrans();
                 :href="home()"
                 class="flex items-center gap-2 self-center font-medium"
             >
-                <div class="flex h-9 w-9 items-center justify-center">
-                    <AppLogoIcon
-                        class="size-9 fill-current text-black dark:text-white"
-                    />
-                </div>
+                <AppBrand image-class="h-9 w-auto" :show-name="false" />
             </Link>
 
             <div class="flex flex-col gap-6">

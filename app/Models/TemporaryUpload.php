@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\TemporaryUploadPurpose;
 use Carbon\CarbonImmutable;
-use Database\Factories\TemporaryAvatarUploadFactory;
+use Database\Factories\TemporaryUploadFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,63 +16,57 @@ use RuntimeException;
 /**
  * @property string $id
  * @property string $user_id
+ * @property TemporaryUploadPurpose $purpose
+ * @property string|null $branding_field
  * @property string $disk
  * @property string $path
  * @property string $original_name
  * @property string $mime_type
  * @property int $size
  * @property CarbonImmutable $expires_at
- * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable|null $updated_at
  */
-class TemporaryAvatarUpload extends Model
+#[Fillable([
+    'user_id',
+    'purpose',
+    'branding_field',
+    'disk',
+    'path',
+    'original_name',
+    'mime_type',
+    'size',
+    'expires_at',
+])]
+class TemporaryUpload extends Model
 {
-    /** @use HasFactory<TemporaryAvatarUploadFactory> */
+    /** @use HasFactory<TemporaryUploadFactory> */
     use HasFactory, HasUuids;
 
-    /**
-     * The attributes that aren't mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $guarded = [];
-
-    /**
-     * Get the user that owns the temporary avatar upload.
-     *
-     * @return BelongsTo<User, $this>
-     */
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     protected function casts(): array
     {
         return [
+            'purpose' => TemporaryUploadPurpose::class,
             'size' => 'integer',
             'expires_at' => 'immutable_datetime',
         ];
     }
 
-    /**
-     * The "booted" method of the model.
-     */
     protected static function booted(): void
     {
-        static::deleting(function (TemporaryAvatarUpload $upload): void {
+        static::deleting(function (TemporaryUpload $upload): void {
             $disk = Storage::disk($upload->disk);
 
             if ($disk->delete($upload->path) || $disk->missing($upload->path)) {
                 return;
             }
 
-            throw new RuntimeException('Unable to delete temporary avatar upload file.');
+            throw new RuntimeException('Unable to delete temporary upload file.');
         });
     }
 }

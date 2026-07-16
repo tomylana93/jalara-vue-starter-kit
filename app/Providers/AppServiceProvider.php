@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\User;
 use App\Policies\GeneralSettingsPolicy;
 use App\Settings\GeneralSettings;
+use App\Support\Branding\SiteBrandingStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(SiteBrandingStore::class);
     }
 
     /**

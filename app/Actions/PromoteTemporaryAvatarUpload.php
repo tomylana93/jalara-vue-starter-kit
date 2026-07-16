@@ -2,7 +2,8 @@
 
 namespace App\Actions;
 
-use App\Models\TemporaryAvatarUpload;
+use App\Enums\TemporaryUploadPurpose;
+use App\Models\TemporaryUpload;
 use App\Models\User;
 use finfo;
 use Illuminate\Support\Facades\Storage;
@@ -18,15 +19,16 @@ final class PromoteTemporaryAvatarUpload
      *
      * @throws ValidationException
      */
-    public function validate(User $user, ?string $temporaryAvatarUploadId): ?TemporaryAvatarUpload
+    public function validate(User $user, ?string $temporaryAvatarUploadId): ?TemporaryUpload
     {
         if ($temporaryAvatarUploadId === null) {
             return null;
         }
 
-        $upload = TemporaryAvatarUpload::query()
+        $upload = TemporaryUpload::query()
             ->where('id', $temporaryAvatarUploadId)
             ->where('user_id', $user->id)
+            ->where('purpose', TemporaryUploadPurpose::Avatar->value)
             ->first();
 
         if ($upload === null || $upload->expires_at->isPast() || ! $this->hasValidStoredFile($upload)) {
@@ -47,7 +49,7 @@ final class PromoteTemporaryAvatarUpload
     {
         $upload = $this->validate($user, $temporaryAvatarUploadId);
 
-        if (! $upload instanceof TemporaryAvatarUpload) {
+        if (! $upload instanceof TemporaryUpload) {
             return;
         }
 
@@ -58,7 +60,7 @@ final class PromoteTemporaryAvatarUpload
         $upload->delete();
     }
 
-    private function hasValidStoredFile(TemporaryAvatarUpload $upload): bool
+    private function hasValidStoredFile(TemporaryUpload $upload): bool
     {
         try {
             $disk = Storage::disk($upload->disk);

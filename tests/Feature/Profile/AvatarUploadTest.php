@@ -1,6 +1,7 @@
 <?php
 
-use App\Models\TemporaryAvatarUpload;
+use App\Enums\TemporaryUploadPurpose;
+use App\Models\TemporaryUpload;
 use App\Models\User;
 use App\Support\MediaDisk;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -24,7 +25,7 @@ test('an authenticated user can stage a JPEG avatar', function () {
         ->assertCreated()
         ->assertJsonStructure(['id', 'name', 'size', 'type']);
 
-    expect(TemporaryAvatarUpload::query()->where('user_id', $user->id)->count())->toBe(1);
+    expect(TemporaryUpload::query()->where('user_id', $user->id)->count())->toBe(1);
 });
 
 test('avatar uploads can be staged via the direct profile URL', function () {
@@ -58,7 +59,7 @@ test('a profile save promotes only the current users staged avatar', function ()
         ->assertRedirect(route('profile.edit'));
 
     expect($user->refresh()->getMedia('avatar'))->toHaveCount(1)
-        ->and(TemporaryAvatarUpload::query()->find($upload->id))->toBeNull();
+        ->and(TemporaryUpload::query()->find($upload->id))->toBeNull();
 });
 
 test('a user cannot destroy or promote another users staged avatar', function () {
@@ -134,7 +135,7 @@ test('an owner can successfully destroy their staged upload and its file', funct
         ->deleteJson(route('profile.avatar-uploads.destroy', $upload))
         ->assertNoContent();
 
-    expect(TemporaryAvatarUpload::query()->find($upload->id))->toBeNull();
+    expect(TemporaryUpload::query()->find($upload->id))->toBeNull();
     Storage::disk($upload->disk)->assertMissing($upload->path);
 });
 
@@ -153,8 +154,10 @@ test('an owner can cancel the same staged upload more than once', function () {
 
 test('promoting an expired upload fails validation without updating the profile', function () {
     $user = User::factory()->create();
-    $upload = TemporaryAvatarUpload::factory()->expired()->create([
+    $upload = TemporaryUpload::factory()->create([
         'user_id' => $user->id,
+        'purpose' => TemporaryUploadPurpose::Avatar,
+        'expires_at' => now()->subSecond(),
     ]);
 
     $this->actingAs($user)
@@ -281,14 +284,15 @@ test('the profile page and user shell share null avatar values after removal', f
         );
 });
 
-function stageAvatarFor(User $user): TemporaryAvatarUpload
+function stageAvatarFor(User $user): TemporaryUpload
 {
     $file = UploadedFile::fake()->image('avatar.jpg');
     $disk = MediaDisk::avatar();
     $path = $file->storeAs("temporary-avatars/{$user->id}", Str::random(40).'.jpg', ['disk' => $disk]);
 
-    return TemporaryAvatarUpload::query()->create([
+    return TemporaryUpload::query()->create([
         'user_id' => $user->id,
+        'purpose' => TemporaryUploadPurpose::Avatar,
         'disk' => $disk,
         'path' => $path,
         'original_name' => 'avatar.jpg',

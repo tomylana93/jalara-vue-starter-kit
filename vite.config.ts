@@ -56,9 +56,12 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.ts'],
             refresh: true,
             fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
-                }),
+                bunny('Inter', { weights: [400, 500, 600, 700] }),
+                bunny('Sora', { weights: [600, 700] }),
+                bunny('Plus Jakarta Sans', { weights: [400, 500, 600, 700] }),
+                bunny('DM Sans', { weights: [400, 500, 600] }),
+                bunny('Space Grotesk', { weights: [600, 700] }),
+                bunny('Nunito', { weights: [600, 700] }),
             ],
         }),
         inertia(),
