@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import AppBrand from '@/components/AppBrand.vue';
 import { useTrans } from '@/composables/useTrans';
 import { home } from '@/routes';
 
@@ -26,13 +26,7 @@ const { trans } = useTrans();
                         :href="home()"
                         class="flex flex-col items-center gap-2 font-medium"
                     >
-                        <div
-                            class="mb-1 flex h-9 w-9 items-center justify-center rounded-md"
-                        >
-                            <AppLogoIcon
-                                class="size-9 fill-current text-[var(--foreground)] dark:text-white"
-                            />
-                        </div>
+                        <AppBrand image-class="h-9 w-auto" :show-name="false" />
                         <span class="sr-only">{{
                             title ? trans(title) : ''
                         }}</span>

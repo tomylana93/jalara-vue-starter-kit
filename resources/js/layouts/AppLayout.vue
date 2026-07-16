@@ -1,14 +1,28 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+import { useStyleSettings } from '@/composables/useStyleSettings';
+import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
+import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 const { breadcrumbs = [] } = defineProps<{
     breadcrumbs?: BreadcrumbItem[];
 }>();
+
+const page = usePage();
+const layoutComponent = computed(() =>
+    page.props.style.site_layout === 'header'
+        ? AppHeaderLayout
+        : AppSidebarLayout,
+);
+
+useStyleSettings();
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <component :is="layoutComponent" :breadcrumbs="breadcrumbs">
         <slot />
-    </AppLayout>
+    </component>
 </template>

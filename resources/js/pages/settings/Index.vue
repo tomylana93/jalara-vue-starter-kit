@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Wrench } from '@lucide/vue';
+import { Palette, Wrench } from '@lucide/vue';
 import { computed } from 'vue';
 import PageWrapper from '@/components/PageWrapper.vue';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { useTrans } from '@/composables/useTrans';
 import { index as settingsIndex } from '@/routes/settings';
 import { edit as generalEdit } from '@/routes/settings/general';
+import { edit as styleEdit } from '@/routes/settings/style';
 import type { CardItem } from '@/types';
 
 const { trans } = useTrans();
@@ -30,6 +31,12 @@ const settingsCards = computed<CardItem[]>(() => [
         description: trans('settings.general.description'),
         href: generalEdit(),
         icon: Wrench,
+    },
+    {
+        title: trans('style.title'),
+        description: trans('style.description'),
+        href: styleEdit(),
+        icon: Palette,
     },
 ]);
 </script>
