@@ -16,6 +16,7 @@
         "lint": "eslint . --fix",
         "lint:check": "eslint .",
         "test:frontend": "node --experimental-strip-types --test 'tests/Frontend/**/*.test.ts'",
+        "test:ssr": "node tests/Frontend/ssr-render-smoke.mjs",
         "types:check": "vue-tsc --noEmit"
     },
     "devDependencies": {

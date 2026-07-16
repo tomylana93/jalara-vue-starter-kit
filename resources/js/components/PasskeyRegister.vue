@@ -14,6 +14,10 @@ const emit = defineEmits<{
 const { trans } = useTrans();
 
 const getDefaultPasskeyName = () => {
+    if (typeof navigator === 'undefined') {
+        return '';
+    }
+
     const ua = navigator.userAgent;
 
     const browser = [
