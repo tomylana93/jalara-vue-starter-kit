@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Profile;
 
+use App\Actions\Profile\StageTemporaryAvatarUpload;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Profile\StoreTemporaryAvatarUploadRequest;
 use App\Models\TemporaryAvatarUpload;
-use App\Support\MediaDisk;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,25 +15,9 @@ class AvatarUploadController extends Controller
     /**
      * Stage a temporary avatar upload.
      */
-    public function store(StoreTemporaryAvatarUploadRequest $request): JsonResponse
+    public function store(StoreTemporaryAvatarUploadRequest $request, StageTemporaryAvatarUpload $stageTemporaryAvatarUpload): JsonResponse
     {
-        $file = $request->file('file');
-        $user = $request->user();
-        $disk = MediaDisk::avatar();
-
-        $path = $file->store("temporary-avatars/{$user->id}", [
-            'disk' => $disk,
-        ]);
-
-        $upload = TemporaryAvatarUpload::query()->create([
-            'user_id' => $user->id,
-            'disk' => $disk,
-            'path' => $path,
-            'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getClientMimeType(),
-            'size' => $file->getSize(),
-            'expires_at' => now()->addDay(),
-        ]);
+        $upload = $stageTemporaryAvatarUpload->handle($request->user(), $request->file('file'));
 
         return response()->json([
             'id' => $upload->id,
