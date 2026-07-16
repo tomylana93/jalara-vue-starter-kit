@@ -33,7 +33,7 @@ defineOptions({
     layout: {
         breadcrumbs: [
             {
-                title: 'Profile settings',
+                title: 'settings.profile.heading',
                 href: edit(),
             },
         ],
@@ -64,8 +64,8 @@ const avatarInitials = computed(() =>
             <div class="flex flex-col gap-6">
                 <Heading
                     variant="small"
-                    title="Profile information"
-                    description="Update your name, email address, and phone number"
+                    :title="trans('profile.information.heading')"
+                    :description="trans('profile.information.description')"
                 />
 
                 <Form
@@ -81,7 +81,7 @@ const avatarInitials = computed(() =>
                     />
 
                     <div class="grid gap-3">
-                        <Label>Avatar</Label>
+                        <Label>{{ trans('profile.avatar.label') }}</Label>
 
                         <div
                             v-if="props.avatar"
@@ -103,7 +103,7 @@ const avatarInitials = computed(() =>
                                 as="button"
                                 class="text-sm font-medium text-destructive hover:underline"
                             >
-                                Remove avatar
+                                {{ trans('profile.avatar.remove') }}
                             </Link>
                         </div>
 
@@ -116,17 +116,21 @@ const avatarInitials = computed(() =>
                             "
                             :accepted-file-types="['image/jpeg', 'image/webp']"
                             :max-file-size="2 * 1024 * 1024"
-                            label-idle="Drop your JPEG or WebP avatar here, or browse"
+                            :label-idle="trans('profile.avatar.uploader.idle')"
                             preview-size="compact"
                             :messages="{
-                                invalidType:
-                                    'Please choose a JPEG or WebP image.',
-                                tooLarge:
-                                    'Avatar images must be 2 MiB or smaller.',
-                                uploadFailed:
-                                    'Your avatar could not be uploaded.',
-                                removeFailed:
-                                    'Your temporary avatar could not be removed.',
+                                invalidType: trans(
+                                    'profile.avatar.uploader.invalid_type',
+                                ),
+                                tooLarge: trans(
+                                    'profile.avatar.uploader.too_large',
+                                ),
+                                uploadFailed: trans(
+                                    'profile.avatar.uploader.upload_failed',
+                                ),
+                                removeFailed: trans(
+                                    'profile.avatar.uploader.remove_failed',
+                                ),
                             }"
                         />
                         <InputError
@@ -135,14 +139,18 @@ const avatarInitials = computed(() =>
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="name">Name</Label>
+                        <Label for="name">{{
+                            trans('profile.form.label.name')
+                        }}</Label>
                         <Input
                             id="name"
                             class="block w-full"
                             name="name"
                             :default-value="user.name"
                             autocomplete="name"
-                            placeholder="Full name"
+                            :placeholder="
+                                trans('profile.form.placeholder.name')
+                            "
                             :aria-invalid="invalid('name')"
                             @blur="validate('name')"
                         />
@@ -150,21 +158,27 @@ const avatarInitials = computed(() =>
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="email">Email address</Label>
+                        <Label for="email">{{
+                            trans('profile.form.label.email')
+                        }}</Label>
                         <Input
                             id="email"
                             class="block w-full"
                             name="email"
                             :default-value="user.email"
                             autocomplete="username"
-                            placeholder="Email address"
+                            :placeholder="
+                                trans('profile.form.placeholder.email')
+                            "
                             :aria-invalid="invalid('email')"
                         />
                         <InputError :message="errors.email" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="phone">Phone number</Label>
+                        <Label for="phone">{{
+                            trans('profile.form.label.phone')
+                        }}</Label>
                         <Input
                             id="phone"
                             type="tel"
@@ -172,7 +186,9 @@ const avatarInitials = computed(() =>
                             name="phone"
                             :default-value="user.phone ?? ''"
                             autocomplete="tel"
-                            placeholder="Phone number"
+                            :placeholder="
+                                trans('profile.form.placeholder.phone')
+                            "
                             :aria-invalid="invalid('phone')"
                             @blur="validate('phone')"
                         />
@@ -186,13 +202,17 @@ const avatarInitials = computed(() =>
                         "
                     >
                         <p class="-mt-4 text-sm text-muted-foreground">
-                            Your email address is unverified.
+                            {{ trans('profile.email_verification.unverified') }}
                             <Link
                                 :href="send()"
                                 as="button"
                                 class="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
                             >
-                                Click here to re-send the verification email.
+                                {{
+                                    trans(
+                                        'profile.email_verification.resend_link',
+                                    )
+                                }}
                             </Link>
                         </p>
 
@@ -202,8 +222,7 @@ const avatarInitials = computed(() =>
                             "
                             class="mt-2 text-sm font-medium text-green-600"
                         >
-                            A new verification link has been sent to your email
-                            address.
+                            {{ trans('profile.email_verification.resent') }}
                         </div>
                     </div>
 
@@ -211,7 +230,7 @@ const avatarInitials = computed(() =>
                         <Button
                             :disabled="processing"
                             data-test="update-profile-button"
-                            >Save</Button
+                            >{{ trans('profile.action.save') }}</Button
                         >
                     </div>
                 </Form>

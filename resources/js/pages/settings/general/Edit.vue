@@ -40,11 +40,11 @@ defineOptions({
     layout: {
         breadcrumbs: [
             {
-                title: 'Settings',
+                title: 'settings.index.title',
                 href: settingsIndex(),
             },
             {
-                title: 'General settings',
+                title: 'settings.general.title',
                 href: generalEdit(),
             },
         ],

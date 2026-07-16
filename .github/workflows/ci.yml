@@ -79,10 +79,14 @@ jobs:
         run: |
           pnpm run lint:check
           pnpm run format:check
+          pnpm run test:frontend
           pnpm run types:check
 
       - name: Build frontend assets
         run: pnpm run build
+
+      - name: Verify generated localization contract is current
+        run: git diff --exit-code -- resources/js/types/translation.generated.ts
 
       - name: Run tests
         run: php artisan test

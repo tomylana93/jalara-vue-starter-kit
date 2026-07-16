@@ -5,10 +5,13 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTrans } from '@/composables/useTrans';
 
 const emit = defineEmits<{
     success: [];
 }>();
+
+const { trans } = useTrans();
 
 const getDefaultPasskeyName = () => {
     const ua = navigator.userAgent;
@@ -61,11 +64,11 @@ const handleCancel = () => {
 
 <template>
     <div v-if="!isSupported" class="text-sm text-muted-foreground">
-        Passkeys are not supported in this browser.
+        {{ trans('security.passkeys.unsupported') }}
     </div>
 
     <Button v-else-if="!showForm" variant="outline" @click="showForm = true">
-        Add passkey
+        {{ trans('security.passkeys.action.add') }}
     </Button>
 
     <form
@@ -74,17 +77,19 @@ const handleCancel = () => {
         class="space-y-4 rounded-lg border border-border bg-muted/50 p-4"
     >
         <div class="grid gap-2">
-            <Label for="passkey-name">Passkey name</Label>
+            <Label for="passkey-name">{{
+                trans('security.passkeys.form.label')
+            }}</Label>
             <Input
                 id="passkey-name"
                 type="text"
                 v-model="name"
-                placeholder="e.g., MacBook Pro, iPhone"
+                :placeholder="trans('security.passkeys.form.placeholder')"
                 class="mt-1 block w-full border-foreground/20"
                 autofocus
             />
             <p class="text-xs text-muted-foreground">
-                A name helps you identify this passkey later.
+                {{ trans('security.passkeys.form.help') }}
             </p>
         </div>
 
@@ -92,10 +97,14 @@ const handleCancel = () => {
 
         <div class="flex gap-2">
             <Button type="submit" :disabled="isLoading || !name.trim()">
-                {{ isLoading ? 'Registering...' : 'Register passkey' }}
+                {{
+                    isLoading
+                        ? trans('security.passkeys.action.registering')
+                        : trans('security.passkeys.action.register')
+                }}
             </Button>
             <Button type="button" variant="ghost" @click="handleCancel">
-                Cancel
+                {{ trans('general.action.cancel') }}
             </Button>
         </div>
     </form>

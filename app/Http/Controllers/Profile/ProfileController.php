@@ -52,13 +52,13 @@ class ProfileController extends Controller
             throw $exception;
         } catch (Throwable) {
             return back()->withErrors([
-                'temporary_avatar_upload_id' => __('We could not access your staged avatar. Please try again.'),
+                'temporary_avatar_upload_id' => __('profile.error.temporary_avatar_unavailable'),
             ]);
         }
 
         $updateUserProfile->handle($request->user(), $request->profileAttributes());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('profile.toast.updated')]);
 
         return to_route('profile.edit');
     }
@@ -70,7 +70,7 @@ class ProfileController extends Controller
     {
         $removeUserAvatar->handle($request->user());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Avatar removed.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('profile.toast.avatar_removed')]);
 
         return to_route('profile.edit');
     }

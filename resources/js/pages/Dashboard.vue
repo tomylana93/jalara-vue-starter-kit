@@ -1,22 +1,26 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+
 import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import { useTrans } from '@/composables/useTrans';
 import { dashboard } from '@/routes';
 
 defineOptions({
     layout: {
         breadcrumbs: [
             {
-                title: 'Dashboard',
+                title: 'navigation.dashboard',
                 href: dashboard(),
             },
         ],
     },
 });
+
+const { trans } = useTrans();
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head :title="trans('navigation.dashboard')" />
 
     <div
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"

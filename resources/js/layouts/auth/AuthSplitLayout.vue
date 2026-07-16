@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { useTrans } from '@/composables/useTrans';
 import { home } from '@/routes';
+
+import type { TranslationKey } from '@/types/translation.generated';
 
 const page = usePage();
 const name = page.props.name;
 
 defineProps<{
-    title?: string;
-    description?: string;
+    title?: TranslationKey;
+    description?: TranslationKey;
 }>();
+
+const { trans } = useTrans();
 </script>
 
 <template>
@@ -34,10 +39,10 @@ defineProps<{
             >
                 <div class="flex flex-col space-y-2 text-center">
                     <h1 class="text-xl font-medium tracking-tight" v-if="title">
-                        {{ title }}
+                        {{ trans(title) }}
                     </h1>
                     <p class="text-sm text-muted-foreground" v-if="description">
-                        {{ description }}
+                        {{ trans(description) }}
                     </p>
                 </div>
                 <slot />

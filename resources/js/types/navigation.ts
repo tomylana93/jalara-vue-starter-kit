@@ -1,8 +1,9 @@
 import type { InertiaLinkProps } from '@inertiajs/vue3';
 import type { LucideIcon } from '@lucide/vue';
+import type { TranslationKey } from '@/types/translation.generated';
 
 export type BreadcrumbItem = {
-    title: string;
+    title: TranslationKey;
     href: NonNullable<InertiaLinkProps['href']>;
 };
 

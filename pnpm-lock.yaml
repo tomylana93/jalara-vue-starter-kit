@@ -81,6 +81,9 @@ importers:
       '@types/node':
         specifier: ^22.13.5
         version: 22.20.1
+      '@typescript-eslint/parser':
+        specifier: ^8.63.0
+        version: 8.63.0(eslint@10.6.0(jiti@2.7.0))(typescript@5.2.2)
       '@vitejs/plugin-vue':
         specifier: ^6.0.0
         version: 6.0.7(vite@8.1.4(@types/node@22.20.1)(jiti@2.7.0))(vue@3.5.39(typescript@5.2.2))
@@ -123,6 +126,9 @@ importers:
       vite:
         specifier: ^8.0.0
         version: 8.1.4(@types/node@22.20.1)(jiti@2.7.0)
+      vue-eslint-parser:
+        specifier: 10.4.1
+        version: 10.4.1(eslint@10.6.0(jiti@2.7.0))
       vue-tsc:
         specifier: ^2.2.4
         version: 2.2.4(typescript@5.2.2)
@@ -624,6 +630,12 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4 <6.1.0'
 
+  '@typescript-eslint/tsconfig-utils@8.64.0':
+    resolution: {integrity: sha512-2yo8rRNKuzbVWQp5kslhANqZ2uDAeROQHBRZNPu8JDsHmeFNj/XJJhX/FhNUWmkHHvoNsKa6+tHJiig87EzsQw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      typescript: '>=4.8.4 <6.1.0'
+
   '@typescript-eslint/type-utils@8.63.0':
     resolution: {integrity: sha512-Nzzh/OGxVCOjObjaj1CQF2RUasyYy2Jfuh+zZ3PjLzG2fYRriAiZLib9UKtO+CpQAS3YHiAS+ckZDclwqI1TPA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -633,6 +645,10 @@ packages:
 
   '@typescript-eslint/types@8.63.0':
     resolution: {integrity: sha512-xyLtl9DUBBFrcJS4x2pIqGLH68/tC2uOa4Z7pUteW09D3bXnnXUom4dyPikzWgB7llmIc1zoeI3aoUdC4rPK/Q==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@typescript-eslint/types@8.64.0':
+    resolution: {integrity: sha512-qjhfuTfLXjA4IOzXvz0rTjT01BqEiIgPoUeMwiEjnaHKJMTNo8rH5pYW1a2L/0Dnux2fPC85AeyJoWaGa8WxTA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@typescript-eslint/typescript-estree@8.63.0':
@@ -2271,8 +2287,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.63.0(typescript@5.2.2)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.63.0(typescript@5.2.2)
-      '@typescript-eslint/types': 8.63.0
+      '@typescript-eslint/tsconfig-utils': 8.64.0(typescript@5.2.2)
+      '@typescript-eslint/types': 8.64.0
       debug: 4.4.3
       typescript: 5.2.2
     transitivePeerDependencies:
@@ -2284,6 +2300,10 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.63.0
 
   '@typescript-eslint/tsconfig-utils@8.63.0(typescript@5.2.2)':
+    dependencies:
+      typescript: 5.2.2
+
+  '@typescript-eslint/tsconfig-utils@8.64.0(typescript@5.2.2)':
     dependencies:
       typescript: 5.2.2
 
@@ -2300,6 +2320,8 @@ snapshots:
       - supports-color
 
   '@typescript-eslint/types@8.63.0': {}
+
+  '@typescript-eslint/types@8.64.0': {}
 
   '@typescript-eslint/typescript-estree@8.63.0(typescript@5.2.2)':
     dependencies:

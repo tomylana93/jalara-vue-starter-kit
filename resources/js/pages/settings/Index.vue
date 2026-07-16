@@ -17,7 +17,7 @@ defineOptions({
     layout: {
         breadcrumbs: [
             {
-                title: 'Settings',
+                title: 'settings.index.title',
                 href: settingsIndex(),
             },
         ],

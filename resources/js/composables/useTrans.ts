@@ -2,12 +2,14 @@ import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 import type { ComputedRef } from 'vue';
+import { createTranslator } from '@/lib/translation';
 
-type ReplacementValue = number | string;
-type Replacements = Record<string, ReplacementValue>;
-type TranslationMessages = {
-    [key: string]: TranslationMessages | string;
-};
+import type {
+    Replacements,
+    TranslationCatalog,
+    TranslationMessages,
+} from '@/lib/translation';
+import type { TranslationKey } from '@/types/translation.generated';
 
 type EagerGlob = (
     pattern: string,
@@ -22,71 +24,43 @@ const localeFiles = (import.meta.glob as unknown as EagerGlob)(
     },
 );
 
-const messages = Object.fromEntries(
+const catalog = Object.fromEntries(
     Object.entries(localeFiles).flatMap(([path, contents]) => {
         const locale = path.match(/([^/]+)\.json$/)?.[1];
 
         return locale ? [[locale, contents]] : [];
     }),
-) as Record<string, TranslationMessages>;
+) as TranslationCatalog;
 
-function getMessage(locale: string, key: string): string | null {
-    const message = key.split('.').reduce<TranslationMessages | string | null>(
-        (current, segment) => {
-            if (
-                current === null ||
-                typeof current === 'string' ||
-                !Object.hasOwn(current, segment)
-            ) {
-                return null;
-            }
-
-            return current[segment];
-        },
-        messages[locale] ?? messages.en ?? null,
-    );
-
-    return typeof message === 'string' ? message : null;
-}
-
-function replacePlaceholders(
-    message: string,
-    replacements: Replacements,
-): string {
-    return Object.entries(replacements)
-        .sort((a, b) => b[0].length - a[0].length)
-        .reduce(
-            (current, [key, value]) =>
-                current
-                    .replaceAll(
-                        `:${key.toUpperCase()}`,
-                        String(value).toUpperCase(),
-                    )
-                    .replaceAll(
-                        `:${key.charAt(0).toUpperCase()}${key.slice(1)}`,
-                        String(value).charAt(0).toUpperCase() +
-                            String(value).slice(1),
-                    )
-                    .replaceAll(`:${key}`, String(value)),
-            message,
-        );
-}
+const translator = createTranslator<TranslationKey>(catalog);
 
 export function trans(
-    key: string,
+    key: TranslationKey,
     replacements: Replacements = {},
     locale?: string,
 ): string {
-    return replacePlaceholders(
-        getMessage(locale ?? 'en', key) ?? key,
-        replacements,
-    );
+    return translator.trans(key, replacements, locale);
+}
+
+export function transChoice(
+    key: TranslationKey,
+    count: number,
+    replacements: Replacements = {},
+    locale?: string,
+): string {
+    return translator.transChoice(key, count, replacements, locale);
 }
 
 export function useTrans(): {
     locale: ComputedRef<string>;
     trans: (
-        key: string,
+        key: TranslationKey,
+        replacements?: Replacements,
+        locale?: string,
+    ) => string;
+    transChoice: (
+        key: TranslationKey,
+        count: number,
         replacements?: Replacements,
         locale?: string,
     ) => string;
@@ -96,7 +70,9 @@ export function useTrans(): {
 
     return {
         locale,
-        trans: (key, replacements = {}, targetLocale = locale.value) =>
-            trans(key, replacements, targetLocale),
+        trans: (key, replacements = {}, target = locale.value) =>
+            translator.trans(key, replacements, target),
+        transChoice: (key, count, replacements = {}, target = locale.value) =>
+            translator.transChoice(key, count, replacements, target),
     };
 }

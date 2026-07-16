@@ -3,6 +3,7 @@ import { Form } from '@inertiajs/vue3';
 import { Eye, EyeOff, LockKeyhole, RefreshCw } from '@lucide/vue';
 import { nextTick, onMounted, ref, useTemplateRef } from 'vue';
 import AlertError from '@/components/AlertError.vue';
+import TranslatedText from '@/components/TranslatedText.vue';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -11,9 +12,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useTrans } from '@/composables/useTrans';
 import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
 import { regenerateRecoveryCodes } from '@/routes/two-factor';
 
+const { trans } = useTrans();
 const { recoveryCodesList, fetchRecoveryCodes, errors } = useTwoFactorAuth();
 const isRecoveryCodesVisible = ref<boolean>(false);
 const recoveryCodeSectionRef = useTemplateRef('recoveryCodeSectionRef');
@@ -42,11 +45,12 @@ onMounted(async () => {
     <Card class="w-full">
         <CardHeader>
             <CardTitle class="flex gap-3">
-                <LockKeyhole class="size-4" />2FA recovery codes
+                <LockKeyhole class="size-4" />{{
+                    trans('security.two_factor.recovery.title')
+                }}
             </CardTitle>
             <CardDescription>
-                Recovery codes let you regain access if you lose your 2FA
-                device. Store them in a secure password manager.
+                {{ trans('security.two_factor.recovery.description') }}
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -58,8 +62,11 @@ onMounted(async () => {
                         :is="isRecoveryCodesVisible ? EyeOff : Eye"
                         class="size-4"
                     />
-                    {{ isRecoveryCodesVisible ? 'Hide' : 'View' }} recovery
-                    codes
+                    {{
+                        isRecoveryCodesVisible
+                            ? trans('security.two_factor.recovery.action.hide')
+                            : trans('security.two_factor.recovery.action.show')
+                    }}
                 </Button>
 
                 <Form
@@ -75,7 +82,12 @@ onMounted(async () => {
                         type="submit"
                         :disabled="processing"
                     >
-                        <RefreshCw /> Regenerate codes
+                        <RefreshCw />
+                        {{
+                            trans(
+                                'security.two_factor.recovery.action.regenerate',
+                            )
+                        }}
                     </Button>
                 </Form>
             </div>
@@ -111,10 +123,18 @@ onMounted(async () => {
                         </div>
                     </div>
                     <p class="text-xs text-muted-foreground select-none">
-                        Each recovery code can be used once to access your
-                        account and will be removed after use. If you need more,
-                        click
-                        <span class="font-bold">Regenerate codes</span> above.
+                        <TranslatedText
+                            translation-key="security.two_factor.recovery.instructions"
+                            :slot-names="['action']"
+                        >
+                            <template #action>
+                                <span class="font-bold">{{
+                                    trans(
+                                        'security.two_factor.recovery.action.regenerate',
+                                    )
+                                }}</span>
+                            </template>
+                        </TranslatedText>
                     </p>
                 </div>
             </div>
