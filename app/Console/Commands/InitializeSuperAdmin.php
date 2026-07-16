@@ -2,14 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\Role;
+use App\Actions\Authorization\InitializeSuperAdmin as InitializeSuperAdminAction;
 use App\Enums\UserStatus;
-use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Date;
-use Spatie\Permission\Models\Role as PermissionRole;
 
 #[Signature('auth:init-superadmin {--reset-password}')]
 #[Description('Initialize or restore the protected Super Admin user and enforce its role.')]
@@ -18,7 +15,7 @@ class InitializeSuperAdmin extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): int
+    public function handle(InitializeSuperAdminAction $initializeSuperAdmin): int
     {
         $name = config('superadmin.name');
         $email = config('superadmin.email');
@@ -39,38 +36,14 @@ class InitializeSuperAdmin extends Command
             return self::FAILURE;
         }
 
-        $user = User::withTrashed()->where('is_system', true)->first()
-            ?? User::withTrashed()->where('email', $email)->first();
-
-        $isNewUser = $user === null;
-
-        if ($isNewUser) {
-            $user = new User;
-        } elseif ($user->trashed()) {
-            $user->restore();
-        }
-
-        $user->name = $name;
-        $user->email = $email;
-        $user->phone = $phone;
-        $user->status = $status instanceof UserStatus ? $status : UserStatus::from($status);
-        $user->is_system = true;
-
-        if ($emailVerified) {
-            $user->email_verified_at ??= Date::now();
-        } else {
-            $user->email_verified_at = null;
-        }
-
-        if ($isNewUser || $this->option('reset-password')) {
-            $user->password = $password;
-        }
-
-        $user->saveQuietly();
-
-        PermissionRole::findOrCreate(Role::SuperAdmin->value);
-
-        $user->enforceSuperAdminRole();
+        $user = $initializeSuperAdmin->handle([
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'status' => $status instanceof UserStatus ? $status : UserStatus::from($status),
+            'email_verified' => (bool) $emailVerified,
+            'password' => is_string($password) ? $password : null,
+        ], (bool) $this->option('reset-password'));
 
         $this->components->info("Super Admin initialized for [{$user->email}].");
 
