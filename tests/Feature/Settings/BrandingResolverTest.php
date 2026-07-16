@@ -20,6 +20,10 @@ test('it resolves official fallbacks and an empty split background', function ()
         'favicon' => '/assets/images/branding/favicon.ico',
         'auth_split_background' => null,
     ]);
+
+    foreach (array_filter($resolved) as $asset) {
+        expect(public_path(ltrim($asset, '/')))->toBeFile();
+    }
 });
 
 test('it exposes an original while a branding conversion is pending', function (): void {
