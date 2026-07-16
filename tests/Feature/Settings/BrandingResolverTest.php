@@ -18,7 +18,7 @@ test('it resolves official fallbacks and an empty split background', function ()
         'logo' => '/assets/images/branding/logo.png',
         'logo_dark' => '/assets/images/branding/logo-dark.png',
         'favicon' => '/assets/images/branding/favicon.ico',
-        'auth_split_background' => null,
+        'auth_split_background' => '/assets/images/auth-bg.jpg',
     ]);
 
     foreach (array_filter($resolved) as $asset) {
@@ -36,4 +36,18 @@ test('it exposes an original while a branding conversion is pending', function (
     $resolved = app(BrandingResolver::class)->resolve($branding->refresh());
 
     expect($resolved['icon'])->toBe($media->getUrl());
+});
+
+test('custom auth split background media overrides the static fallback', function (): void {
+    Storage::fake('public');
+    Queue::fake();
+    $branding = SiteBranding::singleton();
+    $media = $branding->addMedia(UploadedFile::fake()->image('auth-bg.jpg'))
+        ->toMediaCollection(SiteBranding::AuthSplitBackground);
+
+    $resolved = app(BrandingResolver::class)->resolve($branding->refresh());
+
+    expect($resolved['auth_split_background'])
+        ->toBe($media->getUrl())
+        ->not->toBe('/assets/images/auth-bg.jpg');
 });
