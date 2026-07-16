@@ -2,7 +2,7 @@
 
 namespace App\Actions\Authorization;
 
-final class AuthorizationSyncResult
+final readonly class AuthorizationSyncResult
 {
     /**
      * @param  list<string>  $rolesToCreate
@@ -13,12 +13,12 @@ final class AuthorizationSyncResult
      * @param  array<string, list<string>>  $permissionsToDetachByRole
      */
     public function __construct(
-        public readonly array $rolesToCreate,
-        public readonly array $permissionsToCreate,
-        public readonly array $rolesToDelete,
-        public readonly array $permissionsToDelete,
-        public readonly array $permissionsToAttachByRole,
-        public readonly array $permissionsToDetachByRole,
-        public readonly bool $dryRun,
+        public array $rolesToCreate,
+        public array $permissionsToCreate,
+        public array $rolesToDelete,
+        public array $permissionsToDelete,
+        public array $permissionsToAttachByRole,
+        public array $permissionsToDetachByRole,
+        public bool $dryRun,
     ) {}
 }

@@ -8,11 +8,11 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role as PermissionRole;
 use Spatie\Permission\PermissionRegistrar;
 
-final class SyncAuthorization
+final readonly class SyncAuthorization
 {
     public function __construct(
-        private readonly AuthorizationCatalog $catalog,
-        private readonly PermissionRegistrar $permissionRegistrar,
+        private AuthorizationCatalog $catalog,
+        private PermissionRegistrar $permissionRegistrar,
     ) {}
 
     public function handle(bool $dryRun = false): AuthorizationSyncResult

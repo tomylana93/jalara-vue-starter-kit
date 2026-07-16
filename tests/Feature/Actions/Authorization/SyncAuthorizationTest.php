@@ -26,6 +26,7 @@ test('dry run reports the diff without mutating records or permission cache', fu
     PermissionRole::findOrCreate('obsolete-role');
     $registrar = mock(PermissionRegistrar::class);
     $registrar->shouldNotReceive('forgetCachedPermissions');
+
     app()->instance(PermissionRegistrar::class, $registrar);
 
     $action = new SyncAuthorization(app(AuthorizationCatalog::class), $registrar);

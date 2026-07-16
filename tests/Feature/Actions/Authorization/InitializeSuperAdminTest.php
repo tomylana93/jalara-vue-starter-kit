@@ -41,6 +41,7 @@ test('it only resets an existing password when requested', function () {
     $user = $action->handle(superAdminAttributes(password: 'initial-password'), false);
 
     $user->update(['password' => 'preserved-password']);
+
     $action->handle(superAdminAttributes(password: 'replacement-password'), false);
     expect(Hash::check('preserved-password', $user->fresh()->password))->toBeTrue();
 

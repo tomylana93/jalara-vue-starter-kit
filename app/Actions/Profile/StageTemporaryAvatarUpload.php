@@ -31,7 +31,9 @@ final class StageTemporaryAvatarUpload
                 'expires_at' => now()->addDay(),
             ]);
         } catch (Throwable $throwable) {
-            Storage::disk($disk)->delete($path);
+            if (is_string($path)) {
+                Storage::disk($disk)->delete($path);
+            }
 
             throw $throwable;
         }
