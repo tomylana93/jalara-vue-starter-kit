@@ -20,10 +20,10 @@ Every task follows these rules:
 2. One working branch or worktree has one **writer** at a time.
 3. Agents may research, inspect code, analyze tests, and review in parallel.
 4. Two agents must not modify the same file, symbol, migration, route group, generated artifact, or dependency manifest concurrently.
-5. The final reviewer must be different from the writer.
+5. Whenever a task requires independent review — always for Standard and Deep — the final reviewer must be different from the writer. Truly mechanical Routine work is the only exception (see §4).
 6. Completion requires evidence from tests and gates, not an agent's confidence statement.
 7. Do not expand scope to unrelated cleanup.
-8. Do not commit directly to `main`.
+8. Do not commit directly to `main`. Do not push directly to `main` or `dev` — both change only through pull requests, enforced by branch protection and the local `protect-main` hook.
 9. Permanent changes enter `dev` through a pull request unless the developer explicitly directs otherwise.
 10. Human approval is required for architecture, dependencies, destructive migrations, authentication, authorization, public contracts, and releases.
 
@@ -113,6 +113,18 @@ Google       -> read-only scout and final frontend/repository reviewer
 ```
 
 The actual assignment must follow task characteristics rather than provider preference. Google may perform Deep work only when the selected model has sufficient reasoning capability and the orchestrator explicitly assigns it — provider names alone do not determine permission; task risk and actual model capability do.
+
+### Provider fallback
+
+When a required independent provider is unavailable (quota, outage, not installed):
+
+1. use a fresh session of an available provider as the independent reviewer — it must not have written the diff and must review read-only;
+2. for Standard work, a different model or fresh session of the same provider counts as independent review;
+3. for Deep work, at least two genuinely distinct perspectives are still required — obtain explicit developer approval before proceeding with fewer than two providers;
+4. record the substitution and its residual risk in the pre-flight and handoff evidence;
+5. never skip review entirely because the preferred provider is unavailable.
+
+Tool and MCP unavailability (as opposed to provider unavailability) is handled in `.ai/guidelines/03-mcp-routing.md` §Degraded Operation.
 
 ---
 
@@ -363,7 +375,7 @@ The integrator resolves accepted findings and runs the full finishing gate.
 7. Summarize evidence.
 ```
 
-A separate reviewer is optional for truly mechanical work.
+A separate reviewer is optional for truly mechanical Routine work only — this is the single exception to core rule 5.
 
 ### Standard workflow
 
@@ -388,13 +400,16 @@ Run in this order:
 
 ```text
 Finishing gate:
+[ ] php artisan wayfinder:generate --with-form --no-interaction
+    when routes, controllers, or invokable actions changed — run first so
+    the generated files pass the formatting and lint steps below
 [ ] vendor/bin/pint --dirty --format agent
 [ ] pnpm run lint
 [ ] pnpm run format
-[ ] php artisan wayfinder:generate --with-form --no-interaction
-    when routes, controllers, or invokable actions changed
 [ ] targeted tests passed
-[ ] composer ci:check passed
+[ ] composer run agent:gate passed
+    (runs ci:check — lint:check, format:check, types:check, tests —
+    plus pnpm run build)
 [ ] reviewer findings resolved or explicitly accepted
 [ ] no unrelated files changed
 [ ] Serena memory updated or not needed with reason

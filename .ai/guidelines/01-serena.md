@@ -21,6 +21,12 @@ Starting repository work without completing both calls is a workflow violation, 
 
 Serena initialization always comes first. Immediately after both calls complete — and before any other exploration or modification — invoke the skills relevant to the task (process skills such as `brainstorming` or `systematic-debugging` first, then domain skills). A skill framework's "invoke a skill before any action" rule applies to everything **except** the two Serena initialization calls above. This ordering resolves the conflict; neither rule is waived.
 
+### Activation must match the worktree
+
+After `activate_project`, verify that the activated project root equals the current checkout (`git rev-parse --show-toplevel`). In multi-worktree parallel work, each writer activates its own worktree path — never the shared main checkout — otherwise Serena edits files outside the writer's branch.
+
+If activation regenerates or modifies `.serena/project.yml` (config drift, typically after a Serena version change), stop before writing: report the drift to the developer as its own change, and never bundle that diff into an unrelated task.
+
 After initialization, read-only exploration may begin. Before the first file or code modification, post the canonical pre-flight block below.
 
 ## Pre-Flight Evidence — Canonical Block
@@ -235,6 +241,8 @@ Do not silently fall back and continue as though Serena had been used.
 Stop and report to the orchestrator when:
 
 * Serena initialization fails;
+* the activated Serena project root does not match the writer's current worktree;
+* activation modified `.serena/project.yml` (config drift);
 * the declared fixed point does not match the checkout;
 * another writer owns the required file or symbol;
 * the edit crosses an ownership boundary;

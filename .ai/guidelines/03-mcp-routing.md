@@ -287,6 +287,8 @@ Guarded transformations (Rector write mode, mass renames, codemods, generated ty
 
 ## Degraded Operation
 
+This section covers unavailable tools and MCP servers. Unavailable *providers* (a missing second reviewer or analysis provider) are handled in `.ai/guidelines/02-ai-workflow.md` §Provider fallback.
+
 ### Laravel Boost Unavailable
 
 Use: Context7 for documentation; migration files and model definitions for schema inspection; framework and application logs for runtime investigation; official documentation as final fallback. State what precision is lost.
