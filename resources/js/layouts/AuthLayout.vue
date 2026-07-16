@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import AuthLayout from '@/layouts/auth/AuthSimpleLayout.vue';
 
-const { title = '', description = '' } = defineProps<{
-    title?: string;
-    description?: string;
+import type { TranslationKey } from '@/types/translation.generated';
+
+const { title, description } = defineProps<{
+    title?: TranslationKey;
+    description?: TranslationKey;
 }>();
 </script>
 

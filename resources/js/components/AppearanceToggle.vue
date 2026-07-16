@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Monitor, Moon, Sun } from '@lucide/vue';
+import { computed } from 'vue';
+
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -9,15 +11,30 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAppearance } from '@/composables/useAppearance';
+import { useTrans } from '@/composables/useTrans';
+
 import type { Appearance } from '@/types';
 
 const { appearance, updateAppearance } = useAppearance();
+const { trans } = useTrans();
 
-const appearances = [
-    { value: 'light', label: 'Light', icon: Sun },
-    { value: 'dark', label: 'Dark', icon: Moon },
-    { value: 'system', label: 'System', icon: Monitor },
-] as const;
+const appearances = computed(() => [
+    {
+        value: 'light' as const,
+        label: trans('general.appearance.light'),
+        icon: Sun,
+    },
+    {
+        value: 'dark' as const,
+        label: trans('general.appearance.dark'),
+        icon: Moon,
+    },
+    {
+        value: 'system' as const,
+        label: trans('general.appearance.system'),
+        icon: Monitor,
+    },
+]);
 
 function selectAppearance(value: Appearance): void {
     updateAppearance(value);
@@ -33,7 +50,11 @@ function onUpdateModelValue(value: unknown): void {
 <template>
     <DropdownMenu>
         <DropdownMenuTrigger :as-child="true">
-            <Button variant="ghost" size="icon" aria-label="Change appearance">
+            <Button
+                variant="ghost"
+                size="icon"
+                :aria-label="trans('general.appearance.change')"
+            >
                 <Sun v-if="appearance === 'light'" class="size-5" />
                 <Moon v-else-if="appearance === 'dark'" class="size-5" />
                 <Monitor v-else class="size-5" />

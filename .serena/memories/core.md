@@ -2,6 +2,7 @@
 - Jalara Vue Starter Kit: Laravel/Inertia/Vue application foundation with authentication and settings already wired.
 - Backend source map and Laravel-specific invariants: `mem:backend/core`.
 - Frontend source map and Inertia/Vue/Wayfinder invariants: `mem:frontend/core`.
+- Centralized backend/frontend localization contract, generation, exclusions, and gates: `mem:localization/core`.
 - Runtime and package version constraints: `mem:tech_stack`.
 - Repository-specific code and style rules: `mem:conventions`.
 - Common setup, development, and quality commands: `mem:suggested_commands`.

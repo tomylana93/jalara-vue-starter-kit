@@ -7,6 +7,7 @@ return [
     ],
     'appearance' => [
         'label' => 'Theme',
+        'change' => 'Change appearance',
         'light' => 'Light',
         'dark' => 'Dark',
         'system' => 'System',
@@ -23,6 +24,10 @@ return [
     ],
     'error' => [
         'title' => 'Something went wrong.',
+    ],
+    'locale' => [
+        'en' => 'English',
+        'id' => 'Bahasa Indonesia',
     ],
     'uploader' => [
         'idle' => 'Drop files here or browse',

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/input-otp';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppearance } from '@/composables/useAppearance';
+import { useTrans } from '@/composables/useTrans';
 import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
 import { confirm } from '@/routes/two-factor';
 import type { TwoFactorConfigContent } from '@/types';
@@ -30,6 +31,7 @@ type Props = {
 };
 
 const { resolvedAppearance } = useAppearance();
+const { trans } = useTrans();
 
 const props = defineProps<Props>();
 const isOpen = defineModel<boolean>('isOpen');
@@ -46,26 +48,24 @@ const pinInputContainerRef = useTemplateRef('pinInputContainerRef');
 const modalConfig = computed<TwoFactorConfigContent>(() => {
     if (props.twoFactorEnabled) {
         return {
-            title: 'Two-factor authentication enabled',
-            description:
-                'Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.',
-            buttonText: 'Close',
+            title: trans('security.two_factor.setup.enabled.title'),
+            description: trans('security.two_factor.setup.enabled.description'),
+            buttonText: trans('security.two_factor.setup.action.close'),
         };
     }
 
     if (showVerificationStep.value) {
         return {
-            title: 'Verify authentication code',
-            description: 'Enter the 6-digit code from your authenticator app',
-            buttonText: 'Continue',
+            title: trans('security.two_factor.setup.verify.title'),
+            description: trans('security.two_factor.setup.verify.description'),
+            buttonText: trans('security.two_factor.setup.action.continue'),
         };
     }
 
     return {
-        title: 'Enable two-factor authentication',
-        description:
-            'To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app',
-        buttonText: 'Continue',
+        title: trans('security.two_factor.setup.create.title'),
+        description: trans('security.two_factor.setup.create.description'),
+        buttonText: trans('security.two_factor.setup.action.continue'),
     };
 });
 
@@ -196,9 +196,11 @@ watch(
                             <div
                                 class="absolute inset-0 top-1/2 h-px w-full bg-border"
                             />
-                            <span class="relative bg-card px-2 py-1"
-                                >or, enter the code manually</span
-                            >
+                            <span class="relative bg-card px-2 py-1">{{
+                                trans(
+                                    'security.two_factor.setup.manual_separator',
+                                )
+                            }}</span>
                         </div>
 
                         <div
@@ -259,7 +261,7 @@ watch(
                                     :maxlength="6"
                                     :disabled="processing"
                                     autofocus
-                                    aria-label="One-time authentication code"
+                                    :aria-label="trans('auth.common.aria.otp')"
                                 >
                                     <InputOTPGroup>
                                         <InputOTPSlot
@@ -280,14 +282,22 @@ watch(
                                     @click="showVerificationStep = false"
                                     :disabled="processing"
                                 >
-                                    Back
+                                    {{
+                                        trans(
+                                            'security.two_factor.setup.action.back',
+                                        )
+                                    }}
                                 </Button>
                                 <Button
                                     type="submit"
                                     class="w-auto flex-1"
                                     :disabled="processing || code.length < 6"
                                 >
-                                    Confirm
+                                    {{
+                                        trans(
+                                            'security.two_factor.setup.action.confirm',
+                                        )
+                                    }}
                                 </Button>
                             </div>
                         </div>

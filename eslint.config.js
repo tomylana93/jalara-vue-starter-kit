@@ -4,6 +4,8 @@ import prettier from 'eslint-config-prettier/flat';
 import importPlugin from 'eslint-plugin-import-x';
 import vue from 'eslint-plugin-vue';
 
+import noUntranslatedCopy from './eslint-local-rules/no-untranslated-copy.js';
+
 const controlStatements = [
     'if',
     'return',
@@ -68,6 +70,20 @@ export default defineConfigWithVueTs(
         },
     },
     {
+        files: ['resources/js/**/*.{ts,vue}'],
+        ignores: ['resources/js/components/ui/**'],
+        plugins: {
+            local: {
+                rules: {
+                    'no-untranslated-copy': noUntranslatedCopy,
+                },
+            },
+        },
+        rules: {
+            'local/no-untranslated-copy': 'error',
+        },
+    },
+    {
         plugins: {
             '@stylistic': stylistic,
         },
@@ -88,9 +104,10 @@ export default defineConfigWithVueTs(
             'tailwind.config.js',
             'vite.config.ts',
             'resources/js/actions/**',
-            'resources/js/components/ui/*',
+            'resources/js/components/ui/**',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
+            'tests/Frontend/**',
         ],
     },
     prettier,

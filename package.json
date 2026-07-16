@@ -15,6 +15,7 @@
         "lang:export": "php artisan lang:export",
         "lint": "eslint . --fix",
         "lint:check": "eslint .",
+        "test:frontend": "node --experimental-strip-types --test 'tests/Frontend/**/*.test.ts'",
         "types:check": "vue-tsc --noEmit"
     },
     "devDependencies": {

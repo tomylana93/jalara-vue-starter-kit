@@ -11,7 +11,8 @@ use Throwable;
 #[Signature('lang:export
     {--locale=* : The locales to export}
     {--path= : Override the output directory}
-    {--source= : Override the source language directory}')]
+    {--source= : Override the source language directory}
+    {--types-path= : Override the generated TypeScript key contract path}')]
 #[Description('Export Laravel language files to frontend JSON assets')]
 class LangExportCommand extends Command
 {
@@ -21,7 +22,7 @@ class LangExportCommand extends Command
     public function handle(FrontendLocaleExporter $exporter): int
     {
         try {
-            $writtenFiles = $exporter->export($this->locales(), $this->outputPath(), $this->sourcePath());
+            $writtenFiles = $exporter->export($this->locales(), $this->outputPath(), $this->sourcePath(), $this->typesPath());
         } catch (Throwable $throwable) {
             $this->error($throwable->getMessage());
 
@@ -60,6 +61,11 @@ class LangExportCommand extends Command
     private function sourcePath(): ?string
     {
         return $this->stringOption('source');
+    }
+
+    private function typesPath(): ?string
+    {
+        return $this->stringOption('types-path');
     }
 
     private function stringOption(string $name): ?string

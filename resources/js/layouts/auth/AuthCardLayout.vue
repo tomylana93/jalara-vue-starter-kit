@@ -8,12 +8,17 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useTrans } from '@/composables/useTrans';
 import { home } from '@/routes';
 
+import type { TranslationKey } from '@/types/translation.generated';
+
 defineProps<{
-    title?: string;
-    description?: string;
+    title?: TranslationKey;
+    description?: TranslationKey;
 }>();
+
+const { trans } = useTrans();
 </script>
 
 <template>
@@ -35,9 +40,11 @@ defineProps<{
             <div class="flex flex-col gap-6">
                 <Card class="rounded-xl">
                     <CardHeader class="px-10 pt-8 pb-0 text-center">
-                        <CardTitle class="text-xl">{{ title }}</CardTitle>
+                        <CardTitle class="text-xl">{{
+                            title ? trans(title) : ''
+                        }}</CardTitle>
                         <CardDescription>
-                            {{ description }}
+                            {{ description ? trans(description) : '' }}
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="px-10 py-8">

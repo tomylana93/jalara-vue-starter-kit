@@ -5,6 +5,7 @@ import { destroy } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyRegi
 import Heading from '@/components/Heading.vue';
 import PasskeyItem from '@/components/PasskeyItem.vue';
 import PasskeyRegister from '@/components/PasskeyRegister.vue';
+import { useTrans } from '@/composables/useTrans';
 import type { Passkey } from '@/types/auth';
 
 export type Props = {
@@ -16,6 +17,8 @@ withDefaults(defineProps<Props>(), {
     canManagePasskeys: false,
     passkeys: () => [],
 });
+
+const { trans, transChoice } = useTrans();
 
 const handleDelete = (id: number, onError: () => void) => {
     router.delete(destroy.url(id), {
@@ -33,9 +36,13 @@ const handleRegisterSuccess = () => {
     <div v-if="canManagePasskeys" class="space-y-6">
         <Heading
             variant="small"
-            title="Passkeys"
-            description="Manage your passkeys for passwordless sign-in"
+            :title="trans('security.passkeys.heading')"
+            :description="trans('security.passkeys.description')"
         />
+
+        <p v-if="passkeys.length" class="-mt-2 text-sm text-muted-foreground">
+            {{ transChoice('security.passkeys.count', passkeys.length) }}
+        </p>
 
         <div class="overflow-hidden rounded-lg border border-border">
             <template v-if="passkeys.length">
@@ -53,9 +60,11 @@ const handleRegisterSuccess = () => {
                 >
                     <KeyRound class="h-7 w-7 text-muted-foreground" />
                 </div>
-                <p class="font-medium">No passkeys yet</p>
+                <p class="font-medium">
+                    {{ trans('security.passkeys.empty.title') }}
+                </p>
                 <p class="mt-1 text-sm text-muted-foreground">
-                    Add a passkey to sign in without a password
+                    {{ trans('security.passkeys.empty.description') }}
                 </p>
             </div>
         </div>

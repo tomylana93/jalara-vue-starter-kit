@@ -23,7 +23,7 @@ function exportLaravelLang(): boolean {
 }
 
 function isLaravelPhpLangFile(path: string): boolean {
-    return /(^|\/)lang\/.+\.php$/.test(path.replaceAll('\\', '/'));
+    return /(^|\/)lang\/(en|id)\/.+\.php$/.test(path.replaceAll('\\', '/'));
 }
 
 function laravelLangExport(): Plugin {
@@ -35,7 +35,7 @@ function laravelLangExport(): Plugin {
             }
         },
         configureServer(server): void {
-            server.watcher.add('lang/**/*.php');
+            server.watcher.add('lang/{en,id}/**/*.php');
             server.watcher.on('all', (_event, path) => {
                 if (!isLaravelPhpLangFile(path)) {
                     return;

@@ -3,7 +3,7 @@
 namespace App\Support\Localization;
 
 use Illuminate\Filesystem\Filesystem;
-use RuntimeException;
+use Throwable;
 
 class FrontendLocaleExporter
 {
@@ -12,36 +12,144 @@ class FrontendLocaleExporter
     ) {}
 
     /**
-     * Export the given locales' PHP language files to per-locale JSON assets.
+     * Export the human-authored PHP catalogs to per-locale JSON assets and a
+     * tracked TypeScript key union.
+     *
+     * The complete catalog is validated before any target is replaced. All
+     * generated content is prepared in memory, existing targets are backed up,
+     * and replacement is all-or-nothing: on any failure the previous assets are
+     * restored byte-for-byte.
      *
      * @param  list<string>|null  $locales
-     * @return array<string, string>
+     * @return array<string, string> Map of locale to written JSON path.
      */
-    public function export(?array $locales = null, ?string $outputDirectory = null, ?string $sourceDirectory = null): array
-    {
+    public function export(
+        ?array $locales = null,
+        ?string $outputDirectory = null,
+        ?string $sourceDirectory = null,
+        ?string $typesPath = null,
+    ): array {
         $sourceDirectory ??= lang_path();
         $outputDirectory ??= $sourceDirectory;
         $locales ??= $this->availableLocales($sourceDirectory);
+        $typesPath ??= resource_path('js/types/translation.generated.ts');
+
+        $catalog = LocalizationCatalog::fromDirectory($this->files, $sourceDirectory, $locales);
 
         $this->files->ensureDirectoryExists($outputDirectory);
+        $this->files->ensureDirectoryExists(dirname($typesPath));
 
+        /** @var array<string, string> $targets Map of target path to its new content. */
+        $targets = [];
         $writtenFiles = [];
 
         foreach ($locales as $locale) {
             $localePath = "{$outputDirectory}/{$locale}.json";
-
-            $this->files->put(
-                $localePath,
-                json_encode(
-                    $this->messagesForLocale($sourceDirectory, $locale),
-                    JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
-                ).PHP_EOL,
-            );
-
+            $targets[$localePath] = $this->encodeJson($catalog->messages($locale));
             $writtenFiles[$locale] = $localePath;
         }
 
+        $targets[$typesPath] = $this->renderTypeUnion($catalog->keys());
+
+        $this->installAtomically($targets);
+
         return $writtenFiles;
+    }
+
+    /**
+     * Replace every target atomically, restoring backups on any failure.
+     *
+     * @param  array<string, string>  $targets
+     */
+    private function installAtomically(array $targets): void
+    {
+        $temporaryFiles = [];
+        $backups = [];
+        $newTargets = [];
+
+        try {
+            foreach ($targets as $path => $contents) {
+                $temporary = "{$path}.exporting";
+                $this->files->put($temporary, $contents);
+                $temporaryFiles[$path] = $temporary;
+
+                if ($this->files->exists($path)) {
+                    $backup = "{$path}.backup";
+                    $this->files->copy($path, $backup);
+                    $backups[$path] = $backup;
+                } else {
+                    $newTargets[] = $path;
+                }
+            }
+
+            foreach ($temporaryFiles as $path => $temporary) {
+                $this->files->move($temporary, $path);
+            }
+        } catch (Throwable $throwable) {
+            $this->restore($backups, $temporaryFiles, $newTargets);
+
+            throw $throwable;
+        }
+
+        foreach ($backups as $backup) {
+            $this->files->delete($backup);
+        }
+    }
+
+    /**
+     * @param  array<string, string>  $backups
+     * @param  array<string, string>  $temporaryFiles
+     * @param  list<string>  $newTargets
+     */
+    private function restore(array $backups, array $temporaryFiles, array $newTargets): void
+    {
+        foreach ($backups as $path => $backup) {
+            if ($this->files->exists($backup)) {
+                $this->files->move($backup, $path);
+            }
+        }
+
+        foreach ($temporaryFiles as $temporary) {
+            if ($this->files->exists($temporary)) {
+                $this->files->delete($temporary);
+            }
+        }
+
+        foreach ($newTargets as $path) {
+            if ($this->files->exists($path)) {
+                $this->files->delete($path);
+            }
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $messages
+     */
+    private function encodeJson(array $messages): string
+    {
+        return json_encode(
+            $messages,
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+        ).PHP_EOL;
+    }
+
+    /**
+     * @param  list<string>  $keys
+     */
+    private function renderTypeUnion(array $keys): string
+    {
+        $header = "// This file is generated by `php artisan lang:export`. Do not edit.\n";
+
+        if ($keys === []) {
+            return "{$header}export type TranslationKey = never;\n";
+        }
+
+        $lines = array_map(
+            static fn (string $key): string => "    | '".addslashes($key)."'",
+            $keys,
+        );
+
+        return "{$header}export type TranslationKey =\n".implode("\n", $lines).";\n";
     }
 
     /**
@@ -57,36 +165,5 @@ class FrontendLocaleExporter
             ->all();
 
         return $locales;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function messagesForLocale(string $sourceDirectory, string $locale): array
-    {
-        $directory = "{$sourceDirectory}/{$locale}";
-
-        throw_unless($this->files->isDirectory($directory), RuntimeException::class, "Locale directory [{$directory}] does not exist.");
-
-        $messages = [];
-
-        foreach (collect($this->files->files($directory))->sortBy->getFilename() as $file) {
-            $namespace = pathinfo($file->getFilename(), PATHINFO_FILENAME);
-            $messages[$namespace] = $this->loadMessages($file->getPathname());
-        }
-
-        return $messages;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function loadMessages(string $path): array
-    {
-        $messages = require $path;
-
-        throw_unless(is_array($messages), RuntimeException::class, "Language file [{$path}] must return an array.");
-
-        return $messages;
     }
 }

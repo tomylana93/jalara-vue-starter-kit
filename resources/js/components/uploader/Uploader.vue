@@ -15,6 +15,8 @@ import {
 } from 'vue';
 import vueFilePond from 'vue-filepond';
 
+import { useTrans } from '@/composables/useTrans';
+
 export type UploaderExistingFile = {
     id: string | number;
     source: string;
@@ -87,6 +89,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
+const { trans } = useTrans();
+
 const FilePondAcceptedFileTypesPlugin = ({ utils }: FilePondPluginContext) => ({
     options: {
         acceptedFileTypes: [[] as string[], utils.Type.ARRAY],
@@ -96,13 +100,15 @@ const FilePondAcceptedFileTypesPlugin = ({ utils }: FilePondPluginContext) => ({
 let FilePond: ReturnType<typeof vueFilePond> | null = null;
 
 const defaultMessages = computed<UploaderMessages>(() => ({
-    invalidType: '',
-    tooLarge: '',
-    uploadFailed: '',
-    removeFailed: '',
+    invalidType: trans('general.uploader.invalid_type'),
+    tooLarge: trans('general.uploader.too_large'),
+    uploadFailed: trans('general.uploader.upload_failed'),
+    removeFailed: trans('general.uploader.remove_failed'),
 }));
 
-const resolvedLabelIdle = computed(() => props.labelIdle ?? '');
+const resolvedLabelIdle = computed(
+    () => props.labelIdle ?? trans('general.uploader.idle'),
+);
 
 const isFilePondReady = shallowRef(false);
 const filePondCredits: [] = [];

@@ -7,6 +7,7 @@ return [
     ],
     'appearance' => [
         'label' => 'Tema',
+        'change' => 'Ubah tampilan',
         'light' => 'Terang',
         'dark' => 'Gelap',
         'system' => 'Sistem',
@@ -23,6 +24,10 @@ return [
     ],
     'error' => [
         'title' => 'Terjadi kesalahan.',
+    ],
+    'locale' => [
+        'en' => 'English',
+        'id' => 'Bahasa Indonesia',
     ],
     'uploader' => [
         'idle' => 'Jatuhkan berkas di sini atau telusuri',

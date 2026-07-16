@@ -16,7 +16,7 @@ enum SiteLocale: string
     {
         return array_map(static fn (self $locale): array => [
             'value' => $locale->value,
-            'label' => $locale === self::English ? 'English' : 'Indonesian',
+            'label' => (string) __("general.locale.{$locale->value}"),
         ], self::cases());
     }
 }

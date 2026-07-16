@@ -31,7 +31,7 @@ final class PromoteTemporaryAvatarUpload
 
         if ($upload === null || $upload->expires_at->isPast() || ! $this->hasValidStoredFile($upload)) {
             throw ValidationException::withMessages([
-                'temporary_avatar_upload_id' => [__('The temporary avatar upload is invalid or has expired.')],
+                'temporary_avatar_upload_id' => [__('profile.error.temporary_avatar_invalid')],
             ]);
         }
 
