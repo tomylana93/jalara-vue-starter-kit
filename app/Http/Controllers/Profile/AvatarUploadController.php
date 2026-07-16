@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Profile;
 
+use App\Actions\Profile\DeleteTemporaryAvatarUpload;
 use App\Actions\Profile\StageTemporaryAvatarUpload;
+use App\Actions\Profile\TemporaryAvatarDeletionResult;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Profile\StoreTemporaryAvatarUploadRequest;
-use App\Models\TemporaryAvatarUpload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -27,17 +28,11 @@ class AvatarUploadController extends Controller
         ], 201);
     }
 
-    public function destroy(Request $request, string $temporaryAvatarUpload): Response
+    public function destroy(Request $request, string $temporaryAvatarUpload, DeleteTemporaryAvatarUpload $deleteTemporaryAvatarUpload): Response
     {
-        $upload = TemporaryAvatarUpload::query()->find($temporaryAvatarUpload);
+        $result = $deleteTemporaryAvatarUpload->handle($request->user(), $temporaryAvatarUpload);
 
-        if ($upload === null) {
-            return response()->noContent();
-        }
-
-        abort_unless($upload->user_id === $request->user()->id, 404);
-
-        $upload->delete();
+        abort_if($result === TemporaryAvatarDeletionResult::Forbidden, 404);
 
         return response()->noContent();
     }
