@@ -2,6 +2,23 @@
 
 return [
     'sidebar' => 'Settings',
+    'layout' => [
+        'aria' => 'Account settings',
+    ],
+    'nav' => [
+        'profile' => 'Profile',
+        'security' => 'Security',
+    ],
+    'profile' => [
+        'title' => 'Profile settings',
+        'heading' => 'Profile settings',
+        'description' => 'Update your profile information and avatar.',
+    ],
+    'security' => [
+        'title' => 'Security settings',
+        'heading' => 'Security settings',
+        'description' => 'Manage your password and sign-in security.',
+    ],
     'index' => [
         'title' => 'Settings',
         'heading' => 'Settings',

@@ -2,6 +2,23 @@
 
 return [
     'sidebar' => 'Pengaturan',
+    'layout' => [
+        'aria' => 'Pengaturan akun',
+    ],
+    'nav' => [
+        'profile' => 'Profil',
+        'security' => 'Keamanan',
+    ],
+    'profile' => [
+        'title' => 'Pengaturan profil',
+        'heading' => 'Pengaturan profil',
+        'description' => 'Perbarui informasi profil dan avatar Anda.',
+    ],
+    'security' => [
+        'title' => 'Pengaturan keamanan',
+        'heading' => 'Pengaturan keamanan',
+        'description' => 'Kelola kata sandi dan keamanan masuk Anda.',
+    ],
     'index' => [
         'title' => 'Pengaturan',
         'heading' => 'Pengaturan',
