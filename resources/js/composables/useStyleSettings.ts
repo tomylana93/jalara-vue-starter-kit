@@ -2,6 +2,10 @@ import { usePage } from '@inertiajs/vue3';
 import { watch } from 'vue';
 
 export function useStyleSettings(): void {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
     const page = usePage();
 
     watch(
