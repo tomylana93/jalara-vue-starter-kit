@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Profile;
 
+use App\Actions\Profile\RemoveUserAvatar;
 use App\Actions\PromoteTemporaryAvatarUpload;
 use App\Actions\UpdateUserProfile;
 use App\Http\Controllers\Controller;
@@ -65,9 +66,9 @@ class ProfileController extends Controller
     /**
      * Delete the user's avatar.
      */
-    public function destroyAvatar(Request $request): RedirectResponse
+    public function destroyAvatar(Request $request, RemoveUserAvatar $removeUserAvatar): RedirectResponse
     {
-        $request->user()->clearMediaCollection('avatar');
+        $removeUserAvatar->handle($request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Avatar removed.')]);
 
