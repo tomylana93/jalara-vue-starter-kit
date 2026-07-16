@@ -17,7 +17,7 @@ test('it resolves one stable site branding owner', function (): void {
         ->and(SiteBranding::query()->count())->toBe(1);
 });
 
-test('its branding collections replace their single file', function (): void {
+test('its branding collections preserve existing media until the update action commits', function (): void {
     Storage::fake('public');
     $branding = SiteBranding::singleton();
 
@@ -26,7 +26,7 @@ test('its branding collections replace their single file', function (): void {
     $branding->addMedia(UploadedFile::fake()->image('second.png'))
         ->toMediaCollection(SiteBranding::Icon);
 
-    expect($branding->fresh()->getMedia(SiteBranding::Icon))->toHaveCount(1);
+    expect($branding->fresh()->getMedia(SiteBranding::Icon))->toHaveCount(2);
 });
 
 test('its background collection rejects unsupported files', function (): void {

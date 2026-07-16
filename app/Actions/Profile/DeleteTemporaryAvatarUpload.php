@@ -2,7 +2,8 @@
 
 namespace App\Actions\Profile;
 
-use App\Models\TemporaryAvatarUpload;
+use App\Enums\TemporaryUploadPurpose;
+use App\Models\TemporaryUpload;
 use App\Models\User;
 
 final class DeleteTemporaryAvatarUpload
@@ -12,7 +13,10 @@ final class DeleteTemporaryAvatarUpload
      */
     public function handle(User $user, string $uploadId): TemporaryAvatarDeletionResult
     {
-        $upload = TemporaryAvatarUpload::query()->find($uploadId);
+        $upload = TemporaryUpload::query()
+            ->whereKey($uploadId)
+            ->where('purpose', TemporaryUploadPurpose::Avatar->value)
+            ->first();
 
         if ($upload === null) {
             return TemporaryAvatarDeletionResult::Missing;

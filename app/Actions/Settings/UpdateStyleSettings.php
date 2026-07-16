@@ -7,8 +7,13 @@ use App\Models\SiteBranding;
 use App\Models\TemporaryUpload;
 use App\Models\User;
 use App\Settings\StyleSettings;
+use finfo;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Throwable;
 
 final class UpdateStyleSettings
 {
@@ -16,34 +21,73 @@ final class UpdateStyleSettings
     public function handle(StyleSettings $settings, array $data, User $actor): void
     {
         $uploads = $this->uploads($data, $actor);
+        $this->validateStoredFiles($uploads);
 
         DB::transaction(function () use ($settings, $data, $uploads): void {
-            $settings->site_logo_style = (string) $data['site_logo_style'];
-            $settings->site_auth_layout = (string) $data['site_auth_layout'];
-            $settings->site_layout = (string) $data['site_layout'];
-            $settings->site_theme = (string) $data['site_theme'];
-            $settings->site_font = (string) $data['site_font'];
-            $settings->save();
-
             $branding = SiteBranding::singleton();
+            $created = [];
+            $superseded = [];
 
-            foreach ($this->collections() as $field => $collection) {
-                $upload = $uploads[$field] ?? null;
+            try {
+                foreach ($this->collections() as $field => $collection) {
+                    $upload = $uploads[$field] ?? null;
 
-                if ($upload instanceof TemporaryUpload) {
-                    $branding->addMediaFromDisk($upload->path, $upload->disk)
-                        ->usingFileName($upload->original_name)
-                        ->toMediaCollection($collection);
-                    $upload->delete();
+                    if ($upload instanceof TemporaryUpload) {
+                        $superseded[] = $branding->getMedia($collection)->all();
+                        $created[] = $branding->addMediaFromDisk($upload->path, $upload->disk)
+                            ->usingFileName($upload->original_name)
+                            ->toMediaCollection($collection);
 
-                    continue;
+                        continue;
+                    }
+
+                    if (($data["{$field}_remove"] ?? false) === true) {
+                        $superseded[] = $branding->getMedia($collection)->all();
+                    }
                 }
 
-                if (($data["{$field}_remove"] ?? false) === true) {
-                    $branding->clearMediaCollection($collection);
-                }
+                $settings->site_logo_style = (string) $data['site_logo_style'];
+                $settings->site_auth_layout = (string) $data['site_auth_layout'];
+                $settings->site_layout = (string) $data['site_layout'];
+                $settings->site_theme = (string) $data['site_theme'];
+                $settings->site_font = (string) $data['site_font'];
+                $settings->save();
+
+                collect($superseded)->collapse()->each(fn (Media $media) => $media->delete());
+            } catch (Throwable $throwable) {
+                collect($created)->each(fn (Media $media) => $media->delete());
+
+                throw $throwable;
             }
         });
+
+        foreach ($uploads as $upload) {
+            $upload->delete();
+        }
+    }
+
+    /** @param array<string, TemporaryUpload> $uploads */
+    private function validateStoredFiles(array $uploads): void
+    {
+        foreach ($uploads as $field => $upload) {
+            try {
+                $disk = Storage::disk($upload->disk);
+                $contents = $disk->get($upload->path);
+                $mime = new finfo(FILEINFO_MIME_TYPE)->buffer($contents);
+                $maximum = $field === 'favicon' ? 1024 * 1024 : ($field === 'auth_split_background' ? 5 * 1024 * 1024 : 2 * 1024 * 1024);
+                $allowed = $field === 'auth_split_background'
+                    ? ['image/jpeg', 'image/webp']
+                    : ($field === 'favicon'
+                        ? ['image/png', 'image/webp', 'image/x-icon', 'image/vnd.microsoft.icon']
+                        : ['image/png', 'image/jpeg', 'image/webp']);
+
+                throw_if($disk->size($upload->path) > $maximum || ! in_array($mime, $allowed, true), RuntimeException::class, 'Stored upload failed physical validation.');
+            } catch (Throwable) {
+                throw ValidationException::withMessages([
+                    "{$field}_upload_id" => [__('style.error.temporary_upload_invalid')],
+                ]);
+            }
+        }
     }
 
     /** @param array<string, bool|string|null> $data

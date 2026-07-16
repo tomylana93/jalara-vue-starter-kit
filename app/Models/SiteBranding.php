@@ -41,18 +41,15 @@ class SiteBranding extends Model implements HasMedia
 
         foreach ([self::Icon, self::IconDark, self::Logo, self::LogoDark] as $collection) {
             $this->addMediaCollection($collection)
-                ->singleFile()
                 ->useDisk($disk)
                 ->acceptsMimeTypes(['image/png', 'image/jpeg', 'image/webp']);
         }
 
         $this->addMediaCollection(self::Favicon)
-            ->singleFile()
             ->useDisk($disk)
             ->acceptsMimeTypes(['image/png', 'image/webp', 'image/x-icon', 'image/vnd.microsoft.icon']);
 
         $this->addMediaCollection(self::AuthSplitBackground)
-            ->singleFile()
             ->useDisk($disk)
             ->acceptsMimeTypes(['image/jpeg', 'image/webp']);
     }

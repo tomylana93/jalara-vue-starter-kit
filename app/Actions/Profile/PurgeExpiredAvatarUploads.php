@@ -2,7 +2,7 @@
 
 namespace App\Actions\Profile;
 
-use App\Models\TemporaryAvatarUpload;
+use App\Models\TemporaryUpload;
 
 final class PurgeExpiredAvatarUploads
 {
@@ -13,10 +13,10 @@ final class PurgeExpiredAvatarUploads
     {
         $deleted = 0;
 
-        TemporaryAvatarUpload::query()
+        TemporaryUpload::query()
             ->where('expires_at', '<=', now())
             ->cursor()
-            ->each(function (TemporaryAvatarUpload $upload) use (&$deleted): void {
+            ->each(function (TemporaryUpload $upload) use (&$deleted): void {
                 $upload->delete();
                 $deleted++;
             });

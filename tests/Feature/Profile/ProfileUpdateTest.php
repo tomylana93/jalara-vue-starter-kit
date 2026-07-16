@@ -1,6 +1,7 @@
 <?php
 
-use App\Models\TemporaryAvatarUpload;
+use App\Enums\TemporaryUploadPurpose;
+use App\Models\TemporaryUpload;
 use App\Models\User;
 use App\Support\MediaDisk;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -83,8 +84,9 @@ test('profile information is updated when promoting a temporary avatar upload', 
     $file = UploadedFile::fake()->image('avatar.jpg');
     $disk = MediaDisk::avatar();
     $path = $file->storeAs("temporary-avatars/{$user->id}", Str::random(40).'.jpg', ['disk' => $disk]);
-    $upload = TemporaryAvatarUpload::query()->create([
+    $upload = TemporaryUpload::query()->create([
         'user_id' => $user->id,
+        'purpose' => TemporaryUploadPurpose::Avatar,
         'disk' => $disk,
         'path' => $path,
         'original_name' => 'avatar.jpg',

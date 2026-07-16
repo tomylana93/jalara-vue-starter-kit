@@ -1,7 +1,8 @@
 <?php
 
 use App\Enums\SiteLocale;
-use App\Models\TemporaryAvatarUpload;
+use App\Enums\TemporaryUploadPurpose;
+use App\Models\TemporaryUpload;
 use App\Models\User;
 use App\Settings\GeneralSettings;
 
@@ -64,8 +65,10 @@ it('returns the invalid staged avatar message in the configured locale', functio
     $settings->save();
 
     $user = User::factory()->create();
-    $upload = TemporaryAvatarUpload::factory()->expired()->create([
+    $upload = TemporaryUpload::factory()->create([
         'user_id' => $user->id,
+        'purpose' => TemporaryUploadPurpose::Avatar,
+        'expires_at' => now()->subSecond(),
     ]);
 
     $this->actingAs($user)

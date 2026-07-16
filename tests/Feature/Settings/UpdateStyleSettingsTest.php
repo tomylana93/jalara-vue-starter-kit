@@ -1,14 +1,18 @@
 <?php
 
+use App\Actions\Settings\UpdateStyleSettings;
 use App\Actions\Uploads\StageTemporaryUpload;
 use App\Enums\Permission;
 use App\Enums\TemporaryUploadPurpose;
 use App\Models\SiteBranding;
+use App\Models\TemporaryUpload;
 use App\Models\User;
+use App\Settings\StyleSettings;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 beforeEach(function (): void {
     Storage::fake('public');
@@ -53,6 +57,45 @@ test('style save removes only the explicitly selected branding collection', func
 
     expect($branding->fresh()->getMedia(SiteBranding::Icon))->toHaveCount(0)
         ->and($branding->fresh()->getMedia(SiteBranding::Logo))->toHaveCount(1);
+});
+
+test('a later promotion failure preserves settings and existing media while compensating new media', function (): void {
+    $user = User::factory()->create();
+    $branding = SiteBranding::singleton();
+    $branding->addMedia(UploadedFile::fake()->image('old-icon.png'))
+        ->toMediaCollection(SiteBranding::Icon);
+    $branding->addMedia(UploadedFile::fake()->image('old-logo.png'))
+        ->toMediaCollection(SiteBranding::Logo);
+
+    $uploads = collect(['icon', 'logo', 'favicon'])->mapWithKeys(fn (string $field): array => [
+        $field => app(StageTemporaryUpload::class)->handle(
+            $user,
+            UploadedFile::fake()->image("{$field}.png"),
+            TemporaryUploadPurpose::Branding,
+        ),
+    ]);
+    $creating = 0;
+    Media::creating(function () use (&$creating): void {
+        $creating++;
+
+        throw_if($creating === 3, RuntimeException::class, 'object storage unavailable');
+    });
+
+    expect(fn () => app(UpdateStyleSettings::class)->handle(app(StyleSettings::class), [
+        ...stylePayload(),
+        'site_theme' => 'rose',
+        'icon_upload_id' => $uploads['icon']->id,
+        'logo_upload_id' => $uploads['logo']->id,
+        'favicon_upload_id' => $uploads['favicon']->id,
+    ], $user))->toThrow(RuntimeException::class, 'object storage unavailable');
+
+    expect(app(StyleSettings::class)->site_theme)->toBe('zinc')
+        ->and($branding->fresh()->getMedia(SiteBranding::Icon))->toHaveCount(1)
+        ->and($branding->fresh()->getFirstMedia(SiteBranding::Icon)?->file_name)->toBe('old-icon.png')
+        ->and($branding->fresh()->getMedia(SiteBranding::Logo))->toHaveCount(1)
+        ->and($branding->fresh()->getFirstMedia(SiteBranding::Logo)?->file_name)->toBe('old-logo.png')
+        ->and(Media::query()->count())->toBe(2)
+        ->and(TemporaryUpload::query()->whereKey($uploads['icon']->id)->exists())->toBeTrue();
 });
 
 /** @return array<string, string> */
