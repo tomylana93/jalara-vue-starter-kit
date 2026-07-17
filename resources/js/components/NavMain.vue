@@ -127,6 +127,10 @@ function onGroupDropdownOpenChange(nodeId: string, open: boolean): void {
                                         :key="child.id"
                                         as-child
                                         :data-active="child.isActive"
+                                        :class="
+                                            child.isActive &&
+                                            'bg-accent text-accent-foreground'
+                                        "
                                     >
                                         <Link
                                             v-if="!child.isExternal"
