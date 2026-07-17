@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import type { FilePondFile, FilePondInitialFile } from 'filepond';
+import { create, registerPlugin } from 'filepond';
+import type {
+    FilePond as FilePondInstance,
+    FilePondFile,
+    FilePondInitialFile,
+} from 'filepond';
 import FilePondPluginFilePoster from 'filepond-plugin-file-poster';
 import 'filepond-plugin-file-poster/dist/filepond-plugin-file-poster.css';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
@@ -13,7 +18,6 @@ import {
     shallowRef,
     watch,
 } from 'vue';
-import vueFilePond from 'vue-filepond';
 
 import { useTrans } from '@/composables/useTrans';
 
@@ -55,6 +59,7 @@ type Emits = {
     'update:removed': [value: Array<string | number>];
     updateTemporaryUploadIds: [value: string[]];
     updateRemovedExistingMediaIds: [value: Array<string | number>];
+    'upload-error': [message: string];
 };
 
 type TemporaryUploadResponse = {
@@ -97,7 +102,7 @@ const FilePondAcceptedFileTypesPlugin = ({ utils }: FilePondPluginContext) => ({
     },
 });
 
-let FilePond: ReturnType<typeof vueFilePond> | null = null;
+let pluginsRegistered = false;
 
 const defaultMessages = computed<UploaderMessages>(() => ({
     invalidType: trans('general.uploader.invalid_type'),
@@ -110,8 +115,8 @@ const resolvedLabelIdle = computed(
     () => props.labelIdle ?? trans('general.uploader.idle'),
 );
 
-const isFilePondReady = shallowRef(false);
-const filePondCredits: [] = [];
+const pondInput = ref<HTMLInputElement | null>(null);
+const pond = shallowRef<FilePondInstance | null>(null);
 const temporaryUploadIds = ref<string[]>([...props.modelValue]);
 const removedExistingIds = ref<Array<string | number>>([...props.removed]);
 
@@ -166,6 +171,10 @@ const pondFiles = computed<FilePondInitialFile[]>(() =>
         })),
 );
 
+watch(pondFiles, (files) => {
+    pond.value?.setOptions({ files });
+});
+
 const imagePreviewHeight = computed(() =>
     props.previewSize === 'compact' ? 80 : 140,
 );
@@ -183,12 +192,14 @@ const server = computed(() => ({
         abort: () => void,
     ) => {
         if (!isAcceptedFileType(file)) {
+            emit('upload-error', messages.value.invalidType);
             error(messages.value.invalidType);
 
             return { abort };
         }
 
         if (props.maxFileSize !== null && file.size > props.maxFileSize) {
+            emit('upload-error', messages.value.tooLarge);
             error(messages.value.tooLarge);
 
             return { abort };
@@ -213,7 +224,10 @@ const server = computed(() => ({
 
         request.onload = () => {
             if (request.status < 200 || request.status >= 300) {
-                error(parseErrorMessage(request.responseText));
+                const message = parseErrorMessage(request.responseText);
+
+                emit('upload-error', message);
+                error(message);
 
                 return;
             }
@@ -238,13 +252,16 @@ const server = computed(() => ({
             }
 
             syncTemporaryUploadIds(nextIds);
+            emit('upload-error', '');
             load(response.id);
         };
 
         request.onerror = () => {
+            emit('upload-error', messages.value.uploadFailed);
             error(messages.value.uploadFailed);
         };
 
+        emit('upload-error', '');
         request.send(formData);
 
         return {
@@ -372,15 +389,34 @@ function syncRemovedExistingIds(value: Array<string | number>): void {
 }
 
 onMounted(() => {
-    if (FilePond === null) {
-        FilePond = vueFilePond(
+    if (!pluginsRegistered) {
+        registerPlugin(
             FilePondPluginImagePreview,
             FilePondPluginFilePoster,
             FilePondAcceptedFileTypesPlugin,
         );
+        pluginsRegistered = true;
     }
 
-    isFilePondReady.value = true;
+    if (pondInput.value !== null) {
+        pond.value = create(pondInput.value, {
+            files: pondFiles.value,
+            server: server.value as never,
+            allowMultiple: props.multiple,
+            maxFiles: maxFiles.value,
+            allowReorder: false,
+            allowFilePoster: true,
+            filePosterHeight: imagePreviewHeight.value,
+            filePosterMaxHeight: imagePreviewHeight.value,
+            allowImagePreview: true,
+            acceptedFileTypes: props.acceptedFileTypes,
+            labelIdle: resolvedLabelIdle.value,
+            credits: false,
+            imagePreviewHeight: imagePreviewHeight.value,
+            onremovefile: handleRemoveFile,
+        } as never);
+    }
+
     window.addEventListener('pagehide', handlePageHide);
 });
 
@@ -390,28 +426,15 @@ onBeforeUnmount(() => {
     if (props.cleanupOnUnmount) {
         cleanupTemporaryUploads();
     }
+
+    pond.value?.destroy();
+    pond.value = null;
 });
 </script>
 
 <template>
     <div class="grid gap-2">
-        <FilePond
-            v-if="isFilePondReady"
-            :id="id"
-            :name="uploadFieldName"
-            :files="pondFiles"
-            :server="server"
-            :allow-multiple="multiple"
-            :max-files="maxFiles"
-            :allow-reorder="false"
-            :allow-file-poster="true"
-            :allow-image-preview="true"
-            :accepted-file-types="acceptedFileTypes"
-            :label-idle="resolvedLabelIdle"
-            :credits="filePondCredits"
-            :image-preview-height="imagePreviewHeight"
-            @removefile="handleRemoveFile"
-        />
+        <input ref="pondInput" :id="id" :name="uploadFieldName" />
     </div>
 </template>
 

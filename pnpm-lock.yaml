@@ -56,9 +56,6 @@ importers:
       vue:
         specifier: ^3.5.13
         version: 3.5.39(typescript@5.2.2)
-      vue-filepond:
-        specifier: ^8.0.0
-        version: 8.0.0(filepond@4.32.12)(vue@3.5.39(typescript@5.2.2))
       vue-input-otp:
         specifier: ^0.3.2
         version: 0.3.2(typescript@5.2.2)(vue@3.5.39(typescript@5.2.2))
@@ -1796,12 +1793,6 @@ packages:
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
 
-  vue-filepond@8.0.0:
-    resolution: {integrity: sha512-FluypMbKJIcOfDi9gT34RQm7MkLDxnPbHQ4VrzNydAUTI1aMYVb1GhJGJjsz/iEtqAfR4V61BCN1TtWuXmTLsg==}
-    peerDependencies:
-      filepond: '>=4.7.4 < 5.x'
-      vue: '>=3 < 4'
-
   vue-input-otp@0.3.2:
     resolution: {integrity: sha512-QMl1842WB6uNAsK4+mZXIskb00TOfahH3AQt8rpRecbtQnOp+oHSUbL/Z3wekfy6pAl+hyN3e1rCUSkCMzbDLQ==}
     peerDependencies:
@@ -3338,11 +3329,6 @@ snapshots:
       semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
-
-  vue-filepond@8.0.0(filepond@4.32.12)(vue@3.5.39(typescript@5.2.2)):
-    dependencies:
-      filepond: 4.32.12
-      vue: 3.5.39(typescript@5.2.2)
 
   vue-input-otp@0.3.2(typescript@5.2.2)(vue@3.5.39(typescript@5.2.2)):
     dependencies:

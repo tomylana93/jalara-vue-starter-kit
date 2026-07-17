@@ -56,8 +56,8 @@ const navigationItems = computed<NavItem[]>(() => [
 
         <Separator class="lg:hidden" />
 
-        <div class="min-w-0 flex-1 md:max-w-2xl">
-            <section class="max-w-xl space-y-12">
+        <div class="min-w-0 flex-1 md:max-w-3xl">
+            <section class="max-w-3xl space-y-12">
                 <slot />
             </section>
         </div>

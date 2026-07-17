@@ -20,6 +20,23 @@ test('style settings follows the shared settings page contract', async () => {
     assert.match(source, /:aria-invalid="invalid\(field\[0\]\)"/);
     assert.match(source, /@blur="validate\(field\[0\]\)"/);
     assert.doesNotMatch(source, /<select(?:\s|>)/);
+    assert.match(source, /image\/vnd\.microsoft\.icon/);
+    assert.match(source, /preview-size="compact"/);
+    assert.match(source, /md:grid-cols-2/);
+    assert.match(source, /xl:grid-cols-3/);
+    assert.match(
+        source,
+        /const uploadErrors = ref<Record<AssetField, string>>/,
+    );
+    assert.match(
+        source,
+        /@upload-error="[\s\S]*uploadErrors\[asset\.key\] = message[\s\S]*"/,
+    );
+    assert.match(
+        source,
+        /uploadErrors\[asset\.key\]\s*\|\|\s*errors\[`\$\{asset\.key\}_upload_id`\]/,
+    );
+    assert.match(source, /head-key="favicon"[\s\S]*:href="branding\.favicon"/);
 
     for (const field of [
         'site_logo_style',

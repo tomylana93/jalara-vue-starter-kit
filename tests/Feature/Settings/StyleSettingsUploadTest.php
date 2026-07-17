@@ -46,3 +46,18 @@ test('branding upload validates field-specific dimensions and permission', funct
         'file' => UploadedFile::fake()->image('icon.png'),
     ])->assertForbidden();
 });
+
+test('manage settings can stage ico favicons reported by browsers', function (): void {
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::ManageSettings->value);
+
+    foreach (['image/x-icon', 'image/vnd.microsoft.icon'] as $mimeType) {
+        $this->actingAs($user)->postJson('/settings/style/uploads/favicon', [
+            'file' => UploadedFile::fake()->create('favicon.ico', 64, $mimeType),
+        ])->assertCreated();
+    }
+
+    $this->actingAs($user)->postJson('/settings/style/uploads/favicon', [
+        'file' => UploadedFile::fake()->create('favicon.svg', 64, 'image/svg+xml'),
+    ])->assertUnprocessable()->assertJsonValidationErrors('file');
+});

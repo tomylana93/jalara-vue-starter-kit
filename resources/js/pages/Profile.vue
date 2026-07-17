@@ -70,7 +70,7 @@ const avatarInitials = computed(() =>
 
                 <Form
                     v-bind="ProfileController.update.form()"
-                    class="space-y-6"
+                    class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_12rem]"
                     :validation-timeout="750"
                     v-slot="{ errors, invalid, validate, processing }"
                 >
@@ -80,15 +80,13 @@ const avatarInitials = computed(() =>
                         :value="temporaryAvatarUploadIds[0] ?? ''"
                     />
 
-                    <div class="grid gap-3">
+                    <div class="grid gap-3 lg:col-start-2 lg:row-span-5">
                         <Label>{{ trans('profile.avatar.label') }}</Label>
 
-                        <div
-                            v-if="props.avatar"
-                            class="flex items-center gap-3"
-                        >
+                        <div class="flex items-center gap-3">
                             <Avatar class="size-16">
                                 <AvatarImage
+                                    v-if="props.avatar"
                                     :src="props.avatar.source"
                                     :alt="user.name"
                                 />
@@ -98,6 +96,7 @@ const avatarInitials = computed(() =>
                             </Avatar>
 
                             <Link
+                                v-if="props.avatar"
                                 :href="ProfileController.destroyAvatar()"
                                 method="delete"
                                 as="button"
@@ -138,7 +137,7 @@ const avatarInitials = computed(() =>
                         />
                     </div>
 
-                    <div class="grid gap-2">
+                    <div class="grid gap-2 lg:col-start-1">
                         <Label for="name">{{
                             trans('profile.form.label.name')
                         }}</Label>
@@ -157,7 +156,7 @@ const avatarInitials = computed(() =>
                         <InputError :message="errors.name" />
                     </div>
 
-                    <div class="grid gap-2">
+                    <div class="grid gap-2 lg:col-start-1">
                         <Label for="email">{{
                             trans('profile.form.label.email')
                         }}</Label>
@@ -175,7 +174,7 @@ const avatarInitials = computed(() =>
                         <InputError :message="errors.email" />
                     </div>
 
-                    <div class="grid gap-2">
+                    <div class="grid gap-2 lg:col-start-1">
                         <Label for="phone">{{
                             trans('profile.form.label.phone')
                         }}</Label>
@@ -200,6 +199,7 @@ const avatarInitials = computed(() =>
                             page.props.mustVerifyEmail &&
                             !user.email_verified_at
                         "
+                        class="lg:col-start-1"
                     >
                         <p class="-mt-4 text-sm text-muted-foreground">
                             {{ trans('profile.email_verification.unverified') }}
@@ -226,7 +226,7 @@ const avatarInitials = computed(() =>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 lg:col-start-1">
                         <Button
                             :disabled="processing"
                             data-test="update-profile-button"

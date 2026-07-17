@@ -119,6 +119,16 @@ const pages = [
         },
     },
     {
+        component: 'Profile',
+        url: '/profile',
+        props: {
+            ...shared({ ...authedUser, avatar: null }),
+            avatar: null,
+            mustVerifyEmail: false,
+            status: null,
+        },
+    },
+    {
         component: 'Security',
         url: '/security',
         props: {

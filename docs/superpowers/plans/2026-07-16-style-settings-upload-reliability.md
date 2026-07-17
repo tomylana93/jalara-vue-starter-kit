@@ -29,6 +29,8 @@
 | `tests/Frontend/style-settings-page.test.ts` | Style Settings markup contract. |
 | `tests/Frontend/profile-page.test.ts` | Profile fallback and responsive layout contract. |
 | `tests/Frontend/ssr-render-smoke.mjs` | SSR regression fixture/assertions. |
+| `resources/js/components/AppBrand.vue` | Logo-style-specific constrained wordmark sizing. |
+| `tests/Frontend/app-brand.test.ts` | AppBrand logo-size contract. |
 
 ### Task 1: Publish and render upload failures
 
@@ -41,7 +43,7 @@
 ```ts
 assert.match(source, /const uploadErrors = ref<Record<AssetField, string>>/);
 assert.match(source, /@upload-error="\(message\) => \{ uploadErrors\[asset\.key\] = message \}"/);
-assert.match(source, /uploadErrors\[asset\.key\] \?\? errors\[`\$\{asset\.key\}_upload_id`\]/);
+assert.match(source, /uploadErrors\[asset\.key\] \|\| errors\[`\$\{asset\.key\}_upload_id`\]/);
 ```
 
 - [ ] **Step 2: Confirm the assertion is red**
@@ -72,7 +74,7 @@ const uploadErrors = ref<Record<AssetField, string>>({
 });
 ```
 
-Bind `@upload-error="(message) => { uploadErrors[asset.key] = message }"` to the uploader and make its `InputError` prefer `uploadErrors[asset.key]` over `errors[`${asset.key}_upload_id`]`.
+Bind `@upload-error="(message) => { uploadErrors[asset.key] = message }"` to the uploader and make its `InputError` use `uploadErrors[asset.key] || errors[`${asset.key}_upload_id`]`, so a cleared immediate error never hides a server form error.
 
 - [ ] **Step 5: Verify and commit**
 

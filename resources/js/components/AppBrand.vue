@@ -8,7 +8,7 @@ type Props = {
     showName?: boolean;
 };
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
     imageClass: 'h-8 w-auto',
     nameClass: 'text-sm font-semibold',
     showName: true,
@@ -16,6 +16,9 @@ withDefaults(defineProps<Props>(), {
 
 const page = usePage();
 const usesLogo = computed(() => page.props.style.site_logo_style === 'logo');
+const resolvedImageClass = computed(() =>
+    usesLogo.value ? 'h-10 max-w-40 w-auto' : props.imageClass,
+);
 const lightSource = computed(() =>
     usesLogo.value ? page.props.branding.logo : page.props.branding.icon,
 );
@@ -31,16 +34,20 @@ const darkSource = computed(() =>
         <img
             :src="lightSource"
             :alt="page.props.name"
-            :class="imageClass"
+            :class="resolvedImageClass"
             class="object-contain dark:hidden"
         />
         <img
             :src="darkSource"
             :alt="page.props.name"
-            :class="imageClass"
+            :class="resolvedImageClass"
             class="hidden object-contain dark:block"
         />
-        <span v-if="showName && !usesLogo" :class="nameClass" class="truncate">
+        <span
+            v-if="props.showName && !usesLogo"
+            :class="props.nameClass"
+            class="truncate"
+        >
             {{ page.props.name }}
         </span>
     </span>

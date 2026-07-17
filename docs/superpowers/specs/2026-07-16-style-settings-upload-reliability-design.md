@@ -25,7 +25,8 @@ The application stages files locally, stores a `TemporaryUpload` record, and pro
 5. Always mount the Profile Avatar fallback while conditionally mounting only its image.
 6. Place the Profile avatar control in the right column of the form at large breakpoints, while preserving a stacked layout on smaller screens.
 7. Keep every frontend change SSR-safe.
-8. Add focused frontend, feature, SSR, and manual browser coverage.
+8. Render a legible constrained wordmark when `site_logo_style` is `logo`, without changing icon-mode dimensions.
+9. Add focused frontend, feature, SSR, and manual browser coverage.
 
 ### Out of scope
 
@@ -37,7 +38,7 @@ The application stages files locally, stores a `TemporaryUpload` record, and pro
 
 ### Shared uploader error contract
 
-`Uploader.vue` emits a typed `upload-error` event with the message already derived by `parseErrorMessage()`. It emits for client MIME/size rejection, non-2xx staging responses, and network errors, while preserving FilePond's native `error(message)` invocation. Style Settings owns a typed `uploadErrors` record keyed by `AssetField`; it clears the field on retry/success and displays `uploadErrors[field]` before the existing `${field}_upload_id` form error.
+`Uploader.vue` emits a typed `upload-error` event with the message already derived by `parseErrorMessage()`. It emits for client MIME/size rejection, non-2xx staging responses, and network errors, while preserving FilePond's native `error(message)` invocation. Style Settings owns a typed `uploadErrors` record keyed by `AssetField`; it clears the field on retry/success and displays a non-empty `uploadErrors[field]` before the existing `${field}_upload_id` form error.
 
 ### Style uploader configuration
 
@@ -72,6 +73,10 @@ The profile form becomes a responsive two-column grid at the existing large brea
 
 No new reactive state, computed value, or template expression may read `window`, `document`, `File`, `XMLHttpRequest`, or browser-only FilePond APIs during module evaluation or server rendering. The responsive Profile placement uses static Tailwind classes only, and the favicon link is declarative Inertia head markup derived solely from server-provided props. The uploader's browser-only FilePond initialization stays in `onMounted`, as it is today. The existing SSR render smoke suite must render both the Style Settings and Profile page shapes without browser globals.
 
+### Logo-style sizing
+
+`AppBrand` selects a logo-specific image class when `site_logo_style` is `logo`: `h-10 max-w-40 w-auto`. This enlarges the wordmark from the icon-mode 32px height while bounding its width in shell and auth layouts. Icon mode continues to use each caller's existing `imageClass`.
+
 ## Acceptance Criteria
 
 1. Every Style Settings FilePond preview/poster is 80px; no other default preview is changed.
@@ -81,7 +86,8 @@ No new reactive state, computed value, or template expression may read `window`,
 5. After avatar deletion, the Profile page shows the user's initials immediately; its page and header both receive null avatar data.
 6. At large breakpoints the avatar control appears to the right of profile fields; at smaller breakpoints it remains stacked and usable.
 7. Style Settings and Profile SSR renders complete without browser-global errors.
-8. Existing authorization, local staging cleanup, promotion, and queued conversion tests remain green.
+8. `site_logo_style = logo` uses the larger constrained wordmark class; icon mode retains its current caller-provided sizing.
+9. Existing authorization, local staging cleanup, promotion, and queued conversion tests remain green.
 
 ## Test Matrix
 

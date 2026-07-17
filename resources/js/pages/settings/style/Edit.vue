@@ -97,7 +97,12 @@ const assetFields: Array<{
     },
     {
         key: 'favicon',
-        accept: ['image/png', 'image/webp', 'image/x-icon'],
+        accept: [
+            'image/png',
+            'image/webp',
+            'image/x-icon',
+            'image/vnd.microsoft.icon',
+        ],
         maxSize: 1024 * 1024,
     },
     {
@@ -123,6 +128,14 @@ const removedIds = ref<Record<AssetField, Array<string | number>>>({
     favicon: [],
     auth_split_background: [],
 });
+const uploadErrors = ref<Record<AssetField, string>>({
+    icon: '',
+    icon_dark: '',
+    logo: '',
+    logo_dark: '',
+    favicon: '',
+    auth_split_background: '',
+});
 </script>
 
 <template>
@@ -130,7 +143,14 @@ const removedIds = ref<Record<AssetField, Array<string | number>>>({
         :title="trans('style.title')"
         :description="trans('style.description')"
     >
-        <Head :title="trans('style.title')" />
+        <Head :title="trans('style.title')">
+            <link
+                head-key="favicon"
+                rel="icon"
+                :href="branding.favicon"
+                sizes="any"
+            />
+        </Head>
 
         <Form
             v-bind="update.form()"
@@ -186,43 +206,53 @@ const removedIds = ref<Record<AssetField, Array<string | number>>>({
                         <InputError :message="errors[field[0]]" />
                     </div>
 
-                    <div
-                        v-for="asset in assetFields"
-                        :key="asset.key"
-                        class="grid gap-2"
-                    >
-                        <Label :for="asset.key">
-                            {{ trans(`style.asset.${asset.key}`) }}
-                        </Label>
-                        <input
-                            type="hidden"
-                            :name="`${asset.key}_upload_id`"
-                            :value="uploadIds[asset.key][0] ?? ''"
-                        />
-                        <input
-                            type="hidden"
-                            :name="`${asset.key}_remove`"
-                            :value="
-                                removedIds[asset.key].length > 0 ? '1' : '0'
-                            "
-                        />
-                        <Uploader
-                            :id="asset.key"
-                            v-model="uploadIds[asset.key]"
-                            v-model:removed="removedIds[asset.key]"
-                            :upload-url="storeBrandingUpload.url(asset.key)"
-                            :delete-url-resolver="
-                                (id) => destroyBrandingUpload.url(id)
-                            "
-                            :existing-files="existingFiles[asset.key]"
-                            :accepted-file-types="asset.accept"
-                            :max-file-size="asset.maxSize"
-                            :multiple="false"
-                            :max-files="1"
-                        />
-                        <InputError
-                            :message="errors[`${asset.key}_upload_id`]"
-                        />
+                    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                        <div
+                            v-for="asset in assetFields"
+                            :key="asset.key"
+                            class="grid gap-2"
+                        >
+                            <Label :for="asset.key">
+                                {{ trans(`style.asset.${asset.key}`) }}
+                            </Label>
+                            <input
+                                type="hidden"
+                                :name="`${asset.key}_upload_id`"
+                                :value="uploadIds[asset.key][0] ?? ''"
+                            />
+                            <input
+                                type="hidden"
+                                :name="`${asset.key}_remove`"
+                                :value="
+                                    removedIds[asset.key].length > 0 ? '1' : '0'
+                                "
+                            />
+                            <Uploader
+                                :id="asset.key"
+                                v-model="uploadIds[asset.key]"
+                                v-model:removed="removedIds[asset.key]"
+                                :upload-url="storeBrandingUpload.url(asset.key)"
+                                :delete-url-resolver="
+                                    (id) => destroyBrandingUpload.url(id)
+                                "
+                                :existing-files="existingFiles[asset.key]"
+                                :accepted-file-types="asset.accept"
+                                :max-file-size="asset.maxSize"
+                                :multiple="false"
+                                :max-files="1"
+                                preview-size="compact"
+                                @upload-error="
+                                    (message) =>
+                                        (uploadErrors[asset.key] = message)
+                                "
+                            />
+                            <InputError
+                                :message="
+                                    uploadErrors[asset.key] ||
+                                    errors[`${asset.key}_upload_id`]
+                                "
+                            />
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-4">
