@@ -257,3 +257,41 @@ test('AppSidebar renders from the centralized navigation composable, not local m
     assert.doesNotMatch(source, /usePage/);
     assert.doesNotMatch(source, /useTrans/);
 });
+
+test('AppHeader renders from the centralized navigation composable, not local menu arrays', async () => {
+    const appHeaderPath = new URL(
+        '../../resources/js/components/AppHeader.vue',
+        import.meta.url,
+    );
+    const source = await readFile(appHeaderPath, 'utf8');
+
+    // Consumes the canonical navigation composable.
+    assert.match(
+        source,
+        /import\s*\{[^}]*useAppNavigation[^}]*\}\s*from\s*'@\/composables\/useAppNavigation'/,
+    );
+    assert.match(source, /useAppNavigation\(\)/);
+
+    // Does not construct local menu arrays.
+    assert.doesNotMatch(source, /mainNavItems/);
+    assert.doesNotMatch(source, /rightNavItems/);
+
+    // Does not import menu icons directly (icons now flow through resolved nodes).
+    assert.doesNotMatch(source, /LayoutGrid/);
+    assert.doesNotMatch(source, /\bFolder\b/);
+    assert.doesNotMatch(source, /BookOpen/);
+});
+
+test('AppHeaderNavigation and AppMobileNavigation presentation adapters exist', async () => {
+    const desktopAdapterPath = new URL(
+        '../../resources/js/components/AppHeaderNavigation.vue',
+        import.meta.url,
+    );
+    const mobileAdapterPath = new URL(
+        '../../resources/js/components/AppMobileNavigation.vue',
+        import.meta.url,
+    );
+
+    await assert.doesNotReject(readFile(desktopAdapterPath, 'utf8'));
+    await assert.doesNotReject(readFile(mobileAdapterPath, 'utf8'));
+});
