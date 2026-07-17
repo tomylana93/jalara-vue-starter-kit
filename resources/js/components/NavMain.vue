@@ -74,6 +74,7 @@ function onGroupDropdownOpenChange(nodeId: string, open: boolean): void {
                         <Link
                             v-if="!node.isExternal"
                             :href="node.href"
+                            :data-testid="`nav-item-${node.id}`"
                             @click="handleChildSelected"
                         >
                             <component :is="node.icon" v-if="node.icon" />
@@ -84,6 +85,7 @@ function onGroupDropdownOpenChange(nodeId: string, open: boolean): void {
                             :href="toUrl(node.href)"
                             target="_blank"
                             rel="noopener noreferrer"
+                            :data-testid="`nav-item-${node.id}`"
                             @click="handleChildSelected"
                         >
                             <component :is="node.icon" v-if="node.icon" />

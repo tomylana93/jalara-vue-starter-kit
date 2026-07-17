@@ -34,6 +34,7 @@ function handleSelect(): void {
             <Link
                 v-if="node.type === 'item' && !node.isExternal"
                 :href="node.href"
+                :data-testid="`nav-item-${node.id}`"
                 :class="[linkClass, node.isActive && activeItemStyles]"
                 @click="handleSelect"
             >
@@ -45,6 +46,7 @@ function handleSelect(): void {
                 :href="toUrl(node.href)"
                 target="_blank"
                 rel="noopener noreferrer"
+                :data-testid="`nav-item-${node.id}`"
                 :class="[linkClass, node.isActive && activeItemStyles]"
                 @click="handleSelect"
             >

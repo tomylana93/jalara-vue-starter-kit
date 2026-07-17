@@ -39,7 +39,11 @@ const activeItemStyles =
                             'h-9 cursor-pointer px-3',
                         ]"
                     >
-                        <Link v-if="!node.isExternal" :href="node.href">
+                        <Link
+                            v-if="!node.isExternal"
+                            :href="node.href"
+                            :data-testid="`nav-item-${node.id}`"
+                        >
                             <component
                                 v-if="node.icon"
                                 :is="node.icon"
@@ -52,6 +56,7 @@ const activeItemStyles =
                             :href="toUrl(node.href)"
                             target="_blank"
                             rel="noopener noreferrer"
+                            :data-testid="`nav-item-${node.id}`"
                         >
                             <component
                                 v-if="node.icon"
