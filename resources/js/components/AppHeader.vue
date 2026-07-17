@@ -174,6 +174,7 @@ function closeSheet(): void {
                                                         item.label
                                                     }}</span>
                                                     <component
+                                                        v-if="item.icon"
                                                         :is="item.icon"
                                                         class="size-5 opacity-80 group-hover:opacity-100"
                                                     />

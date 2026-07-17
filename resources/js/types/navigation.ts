@@ -56,7 +56,7 @@ export type NavigationGroupDefinition = {
     id: string;
     label: TranslationKey;
     icon?: LucideIcon;
-    children: NavigationItemDefinition[];
+    children: readonly NavigationItemDefinition[];
 };
 
 /**
