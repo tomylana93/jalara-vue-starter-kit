@@ -224,3 +224,36 @@ test('canonical navigation definition declares the stable ids in order with corr
         /href:\s*'https:\/\/laravel\.com\/docs\/starter-kits#vue'/,
     );
 });
+
+test('AppSidebar renders from the centralized navigation composable, not local menu arrays', async () => {
+    const appSidebarPath = new URL(
+        '../../resources/js/components/AppSidebar.vue',
+        import.meta.url,
+    );
+    const source = await readFile(appSidebarPath, 'utf8');
+
+    // Consumes the canonical navigation composable.
+    assert.match(
+        source,
+        /import\s*\{[^}]*useAppNavigation[^}]*\}\s*from\s*'@\/composables\/useAppNavigation'/,
+    );
+    assert.match(source, /useAppNavigation\(\)/);
+
+    // Does not construct local menu arrays.
+    assert.doesNotMatch(source, /mainNavItems/);
+    assert.doesNotMatch(source, /footerNavItems/);
+
+    // Does not import the settings route helper for menu building.
+    assert.doesNotMatch(source, /settingsIndex/);
+    assert.doesNotMatch(source, /from\s*'@\/routes\/settings'/);
+
+    // Does not import menu icons directly (icons now flow through resolved nodes).
+    assert.doesNotMatch(source, /LayoutGrid/);
+    assert.doesNotMatch(source, /\bSettings\b/);
+    assert.doesNotMatch(source, /FolderGit2/);
+    assert.doesNotMatch(source, /BookOpen/);
+
+    // Does not read the page directly (abilities/translation now resolved inside the composable).
+    assert.doesNotMatch(source, /usePage/);
+    assert.doesNotMatch(source, /useTrans/);
+});
