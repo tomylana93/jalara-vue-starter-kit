@@ -14,6 +14,7 @@ function actingAsUserWithManageSettings(): User
 
     $user = User::factory()->create();
     $user->givePermissionTo(Permission::ManageSettings->value);
+
     test()->actingAs($user);
 
     return $user;
