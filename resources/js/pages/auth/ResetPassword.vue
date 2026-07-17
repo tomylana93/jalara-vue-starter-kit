@@ -11,6 +11,7 @@ import { useTrans } from '@/composables/useTrans';
 import { update } from '@/routes/password';
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
         title: 'auth.reset_password.card.heading',
         description: 'auth.reset_password.card.description',

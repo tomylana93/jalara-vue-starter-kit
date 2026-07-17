@@ -11,6 +11,7 @@ import { login } from '@/routes';
 import { email } from '@/routes/password';
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
         title: 'auth.forgot_password.card.heading',
         description: 'auth.forgot_password.card.description',

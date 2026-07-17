@@ -6,6 +6,7 @@ import { useTrans } from '@/composables/useTrans';
 import { dashboard } from '@/routes';
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
         breadcrumbs: [
             {

@@ -9,6 +9,7 @@ import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
         title: 'auth.verify_email.card.heading',
         description: 'auth.verify_email.card.description',

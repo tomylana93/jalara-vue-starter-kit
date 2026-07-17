@@ -14,6 +14,7 @@ import { useTrans } from '@/composables/useTrans';
 import { store } from '@/routes/password/confirm';
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
         title: 'auth.confirm_password.card.heading',
         description: 'auth.confirm_password.card.description',

@@ -14,6 +14,7 @@ import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
         title: 'auth.login.card.heading',
         description: 'auth.login.card.description',

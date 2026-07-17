@@ -15,6 +15,10 @@ import { store } from '@/routes/two-factor/login';
 
 import type { TwoFactorConfigContent } from '@/types';
 
+defineOptions({
+    inheritAttrs: false,
+});
+
 const { trans } = useTrans();
 
 const showRecoveryInput = ref<boolean>(false);
