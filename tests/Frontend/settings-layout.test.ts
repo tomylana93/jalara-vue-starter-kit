@@ -7,9 +7,9 @@ const layoutPath = new URL(
     import.meta.url,
 );
 
-test('settings content uses the available desktop width', async () => {
+test('settings content can use the available desktop width', async () => {
     const source = await readFile(layoutPath, 'utf8');
 
-    assert.match(source, /md:max-w-3xl/);
-    assert.doesNotMatch(source, /max-w-xl/);
+    assert.match(source, /class="[^"]*w-full[^"]*min-w-0[^"]*flex-1"/);
+    assert.doesNotMatch(source, /max-w-/);
 });

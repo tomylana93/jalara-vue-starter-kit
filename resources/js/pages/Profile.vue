@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, usePage } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
+import { Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import {
     destroy as destroyTemporaryAvatarUpload,
@@ -70,7 +71,7 @@ const avatarInitials = computed(() =>
 
                 <Form
                     v-bind="ProfileController.update.form()"
-                    class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_12rem]"
+                    class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]"
                     :validation-timeout="750"
                     v-slot="{ errors, invalid, validate, processing }"
                 >
@@ -80,30 +81,47 @@ const avatarInitials = computed(() =>
                         :value="temporaryAvatarUploadIds[0] ?? ''"
                     />
 
-                    <div class="grid gap-3 lg:col-start-2 lg:row-span-5">
-                        <Label>{{ trans('profile.avatar.label') }}</Label>
+                    <div
+                        class="flex flex-col gap-4 xl:col-start-2 xl:row-span-5"
+                    >
+                        <Label class="self-start">{{
+                            trans('profile.avatar.label')
+                        }}</Label>
 
-                        <div class="flex items-center gap-3">
-                            <Avatar class="size-16">
-                                <AvatarImage
+                        <div class="flex justify-center">
+                            <div class="group relative">
+                                <Avatar class="size-40">
+                                    <AvatarImage
+                                        v-if="props.avatar"
+                                        :src="props.avatar.source"
+                                        :alt="user.name"
+                                    />
+                                    <AvatarFallback>{{
+                                        avatarInitials
+                                    }}</AvatarFallback>
+                                </Avatar>
+
+                                <Button
                                     v-if="props.avatar"
-                                    :src="props.avatar.source"
-                                    :alt="user.name"
-                                />
-                                <AvatarFallback>{{
-                                    avatarInitials
-                                }}</AvatarFallback>
-                            </Avatar>
-
-                            <Link
-                                v-if="props.avatar"
-                                :href="ProfileController.destroyAvatar()"
-                                method="delete"
-                                as="button"
-                                class="text-sm font-medium text-destructive hover:underline"
-                            >
-                                {{ trans('profile.avatar.remove') }}
-                            </Link>
+                                    variant="ghost"
+                                    size="icon"
+                                    as-child
+                                    class="absolute -top-1 -right-1 size-7 rounded-full bg-background/90 text-destructive opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive focus-visible:opacity-100"
+                                >
+                                    <Link
+                                        :href="
+                                            ProfileController.destroyAvatar()
+                                        "
+                                        method="delete"
+                                        as="button"
+                                    >
+                                        <Trash2 class="size-4" />
+                                        <span class="sr-only">{{
+                                            trans('profile.avatar.remove')
+                                        }}</span>
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
 
                         <Uploader
@@ -115,7 +133,6 @@ const avatarInitials = computed(() =>
                             "
                             :accepted-file-types="['image/jpeg', 'image/webp']"
                             :max-file-size="2 * 1024 * 1024"
-                            :label-idle="trans('profile.avatar.uploader.idle')"
                             preview-size="compact"
                             :messages="{
                                 invalidType: trans(
@@ -137,7 +154,7 @@ const avatarInitials = computed(() =>
                         />
                     </div>
 
-                    <div class="grid gap-2 lg:col-start-1">
+                    <div class="grid gap-2 xl:col-start-1">
                         <Label for="name">{{
                             trans('profile.form.label.name')
                         }}</Label>
@@ -156,7 +173,7 @@ const avatarInitials = computed(() =>
                         <InputError :message="errors.name" />
                     </div>
 
-                    <div class="grid gap-2 lg:col-start-1">
+                    <div class="grid gap-2 xl:col-start-1">
                         <Label for="email">{{
                             trans('profile.form.label.email')
                         }}</Label>
@@ -174,7 +191,7 @@ const avatarInitials = computed(() =>
                         <InputError :message="errors.email" />
                     </div>
 
-                    <div class="grid gap-2 lg:col-start-1">
+                    <div class="grid gap-2 xl:col-start-1">
                         <Label for="phone">{{
                             trans('profile.form.label.phone')
                         }}</Label>
@@ -199,7 +216,7 @@ const avatarInitials = computed(() =>
                             page.props.mustVerifyEmail &&
                             !user.email_verified_at
                         "
-                        class="lg:col-start-1"
+                        class="xl:col-start-1"
                     >
                         <p class="-mt-4 text-sm text-muted-foreground">
                             {{ trans('profile.email_verification.unverified') }}
@@ -226,7 +243,7 @@ const avatarInitials = computed(() =>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4 lg:col-start-1">
+                    <div class="flex items-center gap-4 xl:col-start-1">
                         <Button
                             :disabled="processing"
                             data-test="update-profile-button"
