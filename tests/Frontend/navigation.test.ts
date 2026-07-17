@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import { resolveNavigation } from '../../resources/js/lib/navigation.ts';
 import type { NavigationDefinition } from '../../resources/js/types/navigation.ts';
+
+const appNavigationPath = new URL(
+    '../../resources/js/navigation/app-navigation.ts',
+    import.meta.url,
+);
 
 function buildDefinitions(): NavigationDefinition[] {
     return [
@@ -162,4 +168,59 @@ test('does not mutate the input definitions', () => {
     });
 
     assert.equal(JSON.stringify(definitions), snapshot);
+});
+
+test('canonical navigation definition declares the stable ids in order with correct metadata', async () => {
+    const source = await readFile(appNavigationPath, 'utf8');
+
+    // primary: dashboard before settings
+    const dashboardIndex = source.indexOf("id: 'dashboard'");
+    const settingsIndex = source.indexOf("id: 'settings'");
+    assert.notEqual(dashboardIndex, -1, 'expected a dashboard entry');
+    assert.notEqual(settingsIndex, -1, 'expected a settings entry');
+    assert.ok(
+        dashboardIndex < settingsIndex,
+        'expected dashboard to precede settings in the primary definition',
+    );
+
+    // secondary: repository before documentation
+    const repositoryIndex = source.indexOf("id: 'repository'");
+    const documentationIndex = source.indexOf("id: 'documentation'");
+    assert.notEqual(repositoryIndex, -1, 'expected a repository entry');
+    assert.notEqual(documentationIndex, -1, 'expected a documentation entry');
+    assert.ok(
+        repositoryIndex < documentationIndex,
+        'expected repository to precede documentation in the secondary definition',
+    );
+
+    // Settings declares the manage_settings ability
+    const settingsBlock = source.slice(settingsIndex, repositoryIndex);
+    assert.match(settingsBlock, /ability:\s*'manage_settings'/);
+
+    // internal items use Wayfinder helpers, not hardcoded URLs
+    assert.match(source, /href:\s*dashboard\(\)/);
+    assert.match(source, /href:\s*settingsIndex\(\)/);
+    assert.doesNotMatch(source, /['"]\/dashboard['"]/);
+    assert.doesNotMatch(source, /['"]\/settings['"]/);
+
+    // secondary items explicitly declare external behavior and carry external URLs
+    const secondaryBlock = source.slice(repositoryIndex);
+    const repositoryEntry = secondaryBlock.slice(
+        0,
+        secondaryBlock.indexOf("id: 'documentation'"),
+    );
+    const documentationEntry = secondaryBlock.slice(
+        secondaryBlock.indexOf("id: 'documentation'"),
+    );
+
+    assert.match(repositoryEntry, /isExternal:\s*true/);
+    assert.match(
+        repositoryEntry,
+        /href:\s*'https:\/\/github\.com\/laravel\/vue-starter-kit'/,
+    );
+    assert.match(documentationEntry, /isExternal:\s*true/);
+    assert.match(
+        documentationEntry,
+        /href:\s*'https:\/\/laravel\.com\/docs\/starter-kits#vue'/,
+    );
 });
