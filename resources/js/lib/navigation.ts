@@ -20,11 +20,17 @@ export type ResolveNavigationOptions = {
     isCurrentOrParentUrl: (href: NavigationHref) => boolean;
 };
 
-function isLeafVisible(leaf: NavigationItemDefinition, abilities: Auth['abilities']): boolean {
+function isLeafVisible(
+    leaf: NavigationItemDefinition,
+    abilities: Auth['abilities'],
+): boolean {
     return leaf.ability === undefined || abilities[leaf.ability];
 }
 
-function resolveLeaf(leaf: NavigationItemDefinition, options: ResolveNavigationOptions): NavigationItemNode {
+function resolveLeaf(
+    leaf: NavigationItemDefinition,
+    options: ResolveNavigationOptions,
+): NavigationItemNode {
     return {
         type: 'item',
         id: leaf.id,
@@ -37,7 +43,10 @@ function resolveLeaf(leaf: NavigationItemDefinition, options: ResolveNavigationO
     };
 }
 
-function resolveGroup(group: NavigationGroupDefinition, options: ResolveNavigationOptions): NavigationGroupNode | null {
+function resolveGroup(
+    group: NavigationGroupDefinition,
+    options: ResolveNavigationOptions,
+): NavigationGroupNode | null {
     const children = group.children
         .filter((child) => isLeafVisible(child, options.abilities))
         .map((child) => resolveLeaf(child, options));

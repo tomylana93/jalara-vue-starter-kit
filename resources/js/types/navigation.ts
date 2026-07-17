@@ -62,7 +62,8 @@ export type NavigationGroupDefinition = {
 /**
  * The discriminated union of navigation node definitions, keyed on `type`.
  */
-export type NavigationDefinition = NavigationItemDefinition | NavigationGroupDefinition;
+export type NavigationDefinition =
+    NavigationItemDefinition | NavigationGroupDefinition;
 
 /**
  * A resolved navigation leaf: the definition with its label translated and
@@ -77,7 +78,10 @@ export type NavigationItemNode = Omit<NavigationItemDefinition, 'label'> & {
  * A resolved navigation group: the definition with its label translated,
  * its children resolved, and its active state derived from its children.
  */
-export type NavigationGroupNode = Omit<NavigationGroupDefinition, 'label' | 'children'> & {
+export type NavigationGroupNode = Omit<
+    NavigationGroupDefinition,
+    'label' | 'children'
+> & {
     label: string;
     isActive: boolean;
     children: NavigationItemNode[];
