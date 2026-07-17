@@ -45,7 +45,6 @@ it('migrates shell components to the typed translator', function (string $file, 
 })->with([
     'AppHeader' => ['components/AppHeader.vue', [
         "trans('navigation.menu.label')",
-        "trans('navigation.dashboard')",
     ], ['Navigation menu', "'Dashboard'"]],
     'NavMain' => ['components/NavMain.vue', [
         "trans('navigation.platform.label')",

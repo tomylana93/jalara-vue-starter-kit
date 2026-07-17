@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+import type { DeepReadonly } from 'vue';
 import {
     SidebarGroup,
     SidebarGroupContent,
@@ -7,10 +9,10 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { toUrl } from '@/lib/utils';
-import type { NavItem } from '@/types';
+import type { NavigationNode } from '@/types/navigation';
 
 type Props = {
-    items: NavItem[];
+    items: DeepReadonly<NavigationNode[]>;
     class?: string;
 };
 
@@ -23,18 +25,24 @@ defineProps<Props>();
     >
         <SidebarGroupContent>
             <SidebarMenu>
-                <SidebarMenuItem v-for="item in items" :key="item.title">
+                <SidebarMenuItem v-for="node in items" :key="node.id">
                     <SidebarMenuButton
+                        v-if="node.type === 'item'"
                         class="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100"
                         as-child
                     >
+                        <Link v-if="!node.isExternal" :href="node.href">
+                            <component :is="node.icon" v-if="node.icon" />
+                            <span>{{ node.label }}</span>
+                        </Link>
                         <a
-                            :href="toUrl(item.href)"
+                            v-else
+                            :href="toUrl(node.href)"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            <component :is="item.icon" />
-                            <span>{{ item.title }}</span>
+                            <component :is="node.icon" v-if="node.icon" />
+                            <span>{{ node.label }}</span>
                         </a>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
