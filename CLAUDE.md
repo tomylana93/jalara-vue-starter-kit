@@ -1,4 +1,57 @@
 <laravel-boost-guidelines>
+=== .ai/00-serena-tool-mandate rules ===
+
+# Serena Tool Mandate
+
+This rule applies to every AI provider, model, CLI, role, and task classification.
+
+## Mandatory precedence
+
+1. Serena MCP is the primary repository inspection, navigation, reference-analysis, and symbol-editing tool.
+2. Every agent must initialize Serena using the sequence defined in `.ai/guidelines/01-serena.md` before any repository work.
+3. After initialization, use the applicable Serena operation before using an internal file-read, search, grep, or editing tool.
+4. Internal tools are fallback tools, not parallel defaults and not convenience substitutes.
+5. A provider or CLI having stronger built-in repository tools does not waive this requirement.
+
+## Allowed fallback
+
+Fallback to internal tools is allowed only when the required Serena capability is unavailable, fails, cannot parse the relevant file type, or cannot perform the required operation safely.
+
+Before fallback, the agent must report:
+
+```text
+Serena fallback:
+- Required capability:
+- Serena operation attempted:
+- Failure or limitation:
+- Internal fallback tool:
+- Fallback scope:
+- Safety limitation:
+```
+
+The fallback must be targeted to the smallest necessary scope. Broad repository reads, broad grep, full-file replacement, or cross-cutting refactors remain prohibited unless the developer explicitly approves degraded operation.
+
+## Evidence
+
+The canonical pre-flight and every handoff must state one of:
+
+- `Serena: used` with the relevant operations;
+- `Serena: unavailable` with the fallback evidence block above.
+
+An agent may not claim Serena was unavailable merely because an internal tool was faster or more familiar.
+
+## Stop conditions
+
+Stop and return control to the orchestrator when:
+
+- Serena initialization fails and the task requires writing;
+- a safe fallback cannot preserve reference analysis or ownership boundaries;
+- a cross-cutting refactor would rely only on textual search;
+- the fallback would require broad reads or edits outside assigned ownership;
+- the agent cannot prove which repository state was inspected.
+
+Read-only work may continue under degraded operation only within the declared fallback scope. Write work requires explicit role and ownership confirmation, and risky or cross-cutting writes require developer approval.
+
 === .ai/01-serena rules ===
 
 # Serena MCP
@@ -1123,6 +1176,215 @@ Ownership and fixed-point stop conditions are defined in `01-serena.md` §Stop C
 | Generated route helpers         | Wayfinder command                | none                            | designated generator owner |
 | Formatting and safe autofix     | Pint, ESLint, Prettier           | manual correction               | writer or integrator       |
 
+=== .ai/04-handoff-protocol rules ===
+
+# Agent Handoff Protocol
+
+This guideline defines the task-local protocol used when a developer transfers work between AI CLI agents. It complements the generated repository instructions and Superpowers skills; it does not duplicate them.
+
+## Core principles
+
+1. Every handoff is self-contained and must not depend on prior chat context.
+2. Generated instructions in `AGENTS.md` or `CLAUDE.md` remain authoritative.
+3. Task-local packets may add context and authority but may not weaken repository rules.
+4. Evidence and next-agent instructions are separate sections.
+5. Only the orchestrator may change scope, acceptance criteria, classification, ownership, or required approvals.
+6. A reviewer remains read-only and must not silently fix findings.
+7. Git state and command results are evidence; confidence statements are not.
+8. Task packets, review findings, progress notes, and next-agent prompts must not be stored in Serena memory.
+
+## Required identity and Git state
+
+Every task packet and handoff declares:
+
+- schema version;
+- task ID;
+- handoff ID when applicable;
+- workflow status;
+- source role and provider;
+- target role and provider when assigned;
+- fixed-point commit;
+- expected current commit;
+- base branch, task branch, and worktree;
+- exact review diff range;
+- write access and ownership boundary.
+
+A receiving agent verifies these values before acting. Stop when the fixed point is stale, the expected commit cannot be reproduced, the branch or worktree differs, the diff range is invalid, or authority is ambiguous.
+
+## Workflow status
+
+Use exactly one of:
+
+- `PLANNED`
+- `AWAITING_HUMAN_APPROVAL`
+- `READY_FOR_WRITER`
+- `IMPLEMENTING`
+- `READY_FOR_REVIEW`
+- `CHANGES_REQUESTED`
+- `READY_FOR_INTEGRATION`
+- `GATE_FAILED`
+- `HUMAN_DECISION_REQUIRED`
+- `COMPLETE`
+- `BLOCKED`
+- `CANCELLED`
+
+## Task packet
+
+The orchestrator produces a task packet containing:
+
+- goal;
+- measurable acceptance criteria;
+- non-goals;
+- classification;
+- fixed point;
+- active assignment;
+- required Superpowers skills;
+- required MCP tools;
+- write authority and ownership;
+- targeted checks and finishing gate;
+- approvals;
+- stop conditions;
+- expected output contract.
+
+Provider preference must not override role, risk, required tools, task classification, independence requirements, or provider availability.
+
+## Completion evidence
+
+Every agent reports:
+
+- scope completed;
+- files and symbols inspected or changed;
+- references verified;
+- tests added or updated;
+- exact commands actually run and their outcomes;
+- checks passed, failed, or not run;
+- decisions and assumptions;
+- known risks and unresolved issues;
+- Serena memories changed, or `none`;
+- whether ownership was respected;
+- whether human approval is required.
+
+Never report a command as passed unless it was executed successfully in the current repository state.
+
+## Next-agent assignment
+
+Every handoff that continues the workflow includes a next-agent assignment with:
+
+- target role;
+- write access;
+- owned and forbidden paths or symbols;
+- required skills and MCP tools;
+- exact task objective;
+- acceptance criteria;
+- relevant prior evidence;
+- required inspection and commands;
+- output contract;
+- stop conditions.
+
+The next-agent prompt begins by directing the agent to follow `AGENTS.md` or `CLAUDE.md`, then states only task-local context and authority.
+
+## Review handoff
+
+A writer hands off an exact `base_sha..head_sha` diff to a reviewer. The reviewer verifies the diff, remains read-only, and returns a decision and structured findings defined in `.ai/guidelines/05-review-rubric.md`.
+
+The reviewer may route to:
+
+- the writer when changes are requested;
+- the integrator when approved;
+- the orchestrator or developer when blocked or when a material decision is unresolved.
+
+## Finding resolution
+
+Each finding keeps a stable ID. The fix writer records one decision:
+
+- `accepted`;
+- `rejected` with repository evidence;
+- `deferred` with explicit human approval and residual risk.
+
+Blocking findings may not disappear from later handoffs. They require an explicit resolution record.
+
+## Review-cycle limits
+
+Default limits:
+
+- two review-and-fix cycles;
+- three debugging attempts for the same failure;
+- one architecture replan unless the developer approves another.
+
+When the limit is reached, set status to `HUMAN_DECISION_REQUIRED` and report the unresolved decision, evidence, and options. Do not loop blindly.
+
+## Sensitive data
+
+Handoffs must not contain secrets, credentials, tokens, unnecessary personal data, production data extracts, or private customer information. Use references and summaries instead of copying sensitive tool output.
+
+## Runtime storage
+
+Use `.ai/runs/<task-id>/` for temporary local packets and handoffs. The directory is ignored by Git except for its documentation files. Durable project decisions belong in source code, committed documentation, ADRs, or approved Serena memories; temporary coordination does not.
+
+=== .ai/05-review-rubric rules ===
+
+# Independent Review Rubric
+
+This guideline defines evidence-based review decisions for Standard and Deep tasks.
+
+## Decisions
+
+Use exactly one decision:
+
+- `APPROVE` — no material findings.
+- `APPROVE_WITH_NON_BLOCKING_FINDINGS` — only concrete, non-blocking P3 findings remain.
+- `REQUEST_CHANGES` — one or more blocking findings require correction.
+- `BLOCKED` — the diff, requirements, environment, or evidence is insufficient for a valid review.
+
+## Severity
+
+- `P0` — security breach, privilege escalation, data loss, destructive operational failure, or secret exposure.
+- `P1` — broken authorization, broken domain invariant, major regression, or serious data-integrity failure.
+- `P2` — material edge case, missing material test, incorrect framework behavior, or concrete maintainability risk.
+- `P3` — non-blocking improvement with a concrete impact.
+
+Preferences without demonstrated impact are not findings.
+
+## Required finding format
+
+```text
+Finding:
+- ID: REV-001
+- Severity: P0|P1|P2|P3
+- Blocking: yes|no
+- Category:
+- Requirement:
+- File/symbol:
+- Evidence:
+- Impact:
+- Recommended resolution:
+```
+
+Every finding must cite repository evidence, an acceptance criterion, a failed check, or a verified framework rule. Speculation without evidence is not a finding.
+
+## Review priorities
+
+Review in this order:
+
+1. acceptance-criteria compliance;
+2. authorization, authentication, and sensitive-data exposure;
+3. domain invariants and data integrity;
+4. validation and failure behavior;
+5. database transactions, concurrency, and idempotency;
+6. Laravel, Inertia, Vue, and repository conventions;
+7. test validity and missing material scenarios;
+8. regression risk;
+9. unnecessary complexity;
+10. unrelated scope expansion.
+
+## Independence
+
+The final reviewer must not be the writer for Standard or Deep work. Reviewers remain read-only, use Serena MCP first, and may use internal tools only under the degraded-operation rules in `.ai/guidelines/00-serena-tool-mandate.md` and `.ai/guidelines/01-serena.md`.
+
+## Resolution
+
+Each finding keeps its stable ID through the fix and integration phases. The resolution must be `accepted`, `rejected` with evidence, or `deferred` with explicit human approval and residual risk. Blocking findings may not be silently omitted from later handoffs.
+
 === foundation rules ===
 
 # Laravel Boost Guidelines
@@ -1154,6 +1416,10 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - @laravel/vite-plugin-wayfinder (WAYFINDER_VITE) - v0
 - eslint (ESLINT) - v10
 - prettier (PRETTIER) - v3
+
+## Skills Activation
+
+This project has domain-specific skills available in `**/skills/**`. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
 
 ## Conventions
 
