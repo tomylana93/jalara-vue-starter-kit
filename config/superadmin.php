@@ -16,7 +16,7 @@ return [
 
     'name' => env('SUPERADMIN_NAME', 'Super Admin'),
 
-    'email' => env('SUPERADMIN_EMAIL', 'superadmin@example.com'),
+    'email' => env('SUPERADMIN_EMAIL', 'superadmin@jalara.dev'),
 
     'phone' => env('SUPERADMIN_PHONE'),
 
