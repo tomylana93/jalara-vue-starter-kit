@@ -40,6 +40,9 @@
         "pestphp/pest-plugin-browser": "^4.3",
         "pestphp/pest-plugin-laravel": "^4.1"
     },
+    "conflict": {
+        "phpstan/phpstan": "2.2.6"
+    },
     "autoload": {
         "psr-4": {
             "App\\": "app/",
