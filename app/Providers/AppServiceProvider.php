@@ -2,9 +2,15 @@
 
 namespace App\Providers;
 
+use App\Enums\Role;
+use App\Models\User;
+use App\Policies\GeneralSettingsPolicy;
+use App\Settings\GeneralSettings;
+use App\Support\Branding\SiteBrandingStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -15,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(SiteBrandingStore::class);
     }
 
     /**
@@ -24,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureAuthorization();
     }
 
     /**
@@ -46,5 +53,21 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Configure authorization bypasses for the application.
+     */
+    protected function configureAuthorization(): void
+    {
+        Gate::policy(GeneralSettings::class, GeneralSettingsPolicy::class);
+
+        Gate::before(function (?User $user): ?bool {
+            if ($user?->isSystem() && $user->hasRole(Role::SuperAdmin)) {
+                return true;
+            }
+
+            return null;
+        });
     }
 }

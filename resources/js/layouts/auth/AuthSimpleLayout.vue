@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+
+import AppBrand from '@/components/AppBrand.vue';
+import { useTrans } from '@/composables/useTrans';
 import { home } from '@/routes';
 
+import type { TranslationKey } from '@/types/translation.generated';
+
 defineProps<{
-    title?: string;
-    description?: string;
+    title?: TranslationKey;
+    description?: TranslationKey;
 }>();
+
+const { trans } = useTrans();
 </script>
 
 <template>
@@ -20,19 +26,17 @@ defineProps<{
                         :href="home()"
                         class="flex flex-col items-center gap-2 font-medium"
                     >
-                        <div
-                            class="mb-1 flex h-9 w-9 items-center justify-center rounded-md"
-                        >
-                            <AppLogoIcon
-                                class="size-9 fill-current text-[var(--foreground)] dark:text-white"
-                            />
-                        </div>
-                        <span class="sr-only">{{ title }}</span>
+                        <AppBrand image-class="h-9 w-auto" :show-name="false" />
+                        <span class="sr-only">{{
+                            title ? trans(title) : ''
+                        }}</span>
                     </Link>
                     <div class="space-y-2 text-center">
-                        <h1 class="text-xl font-medium">{{ title }}</h1>
+                        <h1 class="text-xl font-medium">
+                            {{ title ? trans(title) : '' }}
+                        </h1>
                         <p class="text-center text-sm text-muted-foreground">
-                            {{ description }}
+                            {{ description ? trans(description) : '' }}
                         </p>
                     </div>
                 </div>

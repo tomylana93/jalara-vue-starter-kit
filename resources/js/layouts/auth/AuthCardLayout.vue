@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import AppBrand from '@/components/AppBrand.vue';
 import {
     Card,
     CardContent,
@@ -8,12 +8,17 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useTrans } from '@/composables/useTrans';
 import { home } from '@/routes';
 
+import type { TranslationKey } from '@/types/translation.generated';
+
 defineProps<{
-    title?: string;
-    description?: string;
+    title?: TranslationKey;
+    description?: TranslationKey;
 }>();
+
+const { trans } = useTrans();
 </script>
 
 <template>
@@ -25,19 +30,17 @@ defineProps<{
                 :href="home()"
                 class="flex items-center gap-2 self-center font-medium"
             >
-                <div class="flex h-9 w-9 items-center justify-center">
-                    <AppLogoIcon
-                        class="size-9 fill-current text-black dark:text-white"
-                    />
-                </div>
+                <AppBrand image-class="h-9 w-auto" :show-name="false" />
             </Link>
 
             <div class="flex flex-col gap-6">
                 <Card class="rounded-xl">
                     <CardHeader class="px-10 pt-8 pb-0 text-center">
-                        <CardTitle class="text-xl">{{ title }}</CardTitle>
+                        <CardTitle class="text-xl">{{
+                            title ? trans(title) : ''
+                        }}</CardTitle>
                         <CardDescription>
-                            {{ description }}
+                            {{ description ? trans(description) : '' }}
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="px-10 py-8">

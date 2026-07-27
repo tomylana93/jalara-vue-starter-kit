@@ -19,10 +19,15 @@
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
-        "laravel/wayfinder": "^0.1.14"
+        "laravel/wayfinder": "^0.1.14",
+        "spatie/laravel-medialibrary": "^11.23",
+        "spatie/laravel-permission": "^8.3",
+        "spatie/laravel-settings": "^3.9"
     },
     "require-dev": {
+        "driftingly/rector-laravel": "^2.5",
         "fakerphp/faker": "^1.24",
+        "fruitcake/laravel-debugbar": "^4.4",
         "larastan/larastan": "^3.9",
         "laravel/boost": "^2.4",
         "laravel/pail": "^1.2.5",
@@ -32,7 +37,11 @@
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.9.3",
         "pestphp/pest": "^4.7",
+        "pestphp/pest-plugin-browser": "^4.3",
         "pestphp/pest-plugin-laravel": "^4.1"
+    },
+    "conflict": {
+        "phpstan/phpstan": "2.2.6"
     },
     "autoload": {
         "psr-4": {
@@ -65,19 +74,32 @@
         "lint:check": [
             "pint --parallel --test"
         ],
+        "refactor": [
+            "rector process --no-progress-bar"
+        ],
+        "refactor:check": [
+            "rector process --dry-run --no-progress-bar"
+        ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
             "pnpm run lint:check",
             "pnpm run format:check",
             "pnpm run types:check",
+            "pnpm run test:frontend",
             "@test"
         ],
+        "agent:gate": [
+            "Composer\\Config::disableProcessTimeout",
+            "@ci:check",
+            "pnpm run build"
+        ],
         "types:check": [
-            "phpstan analyse --memory-limit=512M"
+            "phpstan analyse --memory-limit=1G --no-progress"
         ],
         "test": [
             "@php artisan config:clear --ansi",
             "@lint:check",
+            "@refactor:check",
             "@types:check",
             "@php artisan test"
         ],

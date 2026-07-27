@@ -7,14 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTrans } from '@/composables/useTrans';
 import { update } from '@/routes/password';
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
-        title: 'Reset password',
-        description: 'Please enter your new password below',
+        title: 'auth.reset_password.card.heading',
+        description: 'auth.reset_password.card.description',
     },
 });
+
+const { trans } = useTrans();
 
 const props = defineProps<{
     token: string;
@@ -26,7 +30,7 @@ const inputEmail = ref(props.email);
 </script>
 
 <template>
-    <Head title="Reset password" />
+    <Head :title="trans('auth.reset_password.title')" />
 
     <Form
         v-bind="update.form()"
@@ -36,7 +40,9 @@ const inputEmail = ref(props.email);
     >
         <div class="grid gap-6">
             <div class="grid gap-2">
-                <Label for="email">Email</Label>
+                <Label for="email">{{
+                    trans('auth.reset_password.label.email')
+                }}</Label>
                 <Input
                     id="email"
                     type="email"
@@ -50,27 +56,37 @@ const inputEmail = ref(props.email);
             </div>
 
             <div class="grid gap-2">
-                <Label for="password">Password</Label>
+                <Label for="password">{{
+                    trans('auth.reset_password.label.password')
+                }}</Label>
                 <PasswordInput
                     id="password"
                     name="password"
                     autocomplete="new-password"
                     class="mt-1 block w-full"
                     autofocus
-                    placeholder="Password"
+                    :placeholder="
+                        trans('auth.reset_password.placeholder.password')
+                    "
                     :passwordrules="passwordRules"
                 />
                 <InputError :message="errors.password" />
             </div>
 
             <div class="grid gap-2">
-                <Label for="password_confirmation"> Confirm password </Label>
+                <Label for="password_confirmation">{{
+                    trans('auth.reset_password.label.password_confirmation')
+                }}</Label>
                 <PasswordInput
                     id="password_confirmation"
                     name="password_confirmation"
                     autocomplete="new-password"
                     class="mt-1 block w-full"
-                    placeholder="Confirm password"
+                    :placeholder="
+                        trans(
+                            'auth.reset_password.placeholder.password_confirmation',
+                        )
+                    "
                     :passwordrules="passwordRules"
                 />
                 <InputError :message="errors.password_confirmation" />
@@ -83,7 +99,7 @@ const inputEmail = ref(props.email);
                 data-test="reset-password-button"
             >
                 <Spinner v-if="processing" />
-                Reset password
+                {{ trans('auth.reset_password.action.submit') }}
             </Button>
         </div>
     </Form>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HTMLAttributes, Ref } from "vue"
-import { defaultDocument, useEventListener, useMediaQuery, useVModel } from "@vueuse/core"
+import { defaultDocument, useEventListener, useMediaQuery, useMounted, useVModel } from "@vueuse/core"
 import { TooltipProvider } from "reka-ui"
 import { computed, ref } from "vue"
 import { cn } from "@/lib/utils"
@@ -19,7 +19,9 @@ const emits = defineEmits<{
   "update:open": [open: boolean]
 }>()
 
-const isMobile = useMediaQuery("(max-width: 768px)")
+const viewportIsMobile = useMediaQuery("(max-width: 768px)")
+const isMounted = useMounted()
+const isMobile = computed(() => isMounted.value && viewportIsMobile.value)
 const openMobile = ref(false)
 
 const open = useVModel(props, "open", emits, {

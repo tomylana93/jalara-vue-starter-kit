@@ -2,11 +2,23 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Permission;
+use App\Settings\GeneralSettings;
+use App\Settings\StyleSettings;
+use App\Support\Branding\BrandingResolver;
+use App\Support\Branding\SiteBrandingStore;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    public function __construct(
+        private readonly GeneralSettings $generalSettings,
+        private readonly StyleSettings $styleSettings,
+        private readonly BrandingResolver $brandingResolver,
+        private readonly SiteBrandingStore $siteBrandingStore,
+    ) {}
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -35,11 +47,28 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => $this->generalSettings->site_name,
+            'locale' => app()->getLocale(),
+            'style' => [
+                'site_logo_style' => $this->styleSettings->site_logo_style,
+                'site_auth_layout' => $this->styleSettings->site_auth_layout,
+                'site_layout' => $this->styleSettings->site_layout,
+                'site_theme' => $this->styleSettings->site_theme,
+                'site_font' => $this->styleSettings->site_font,
+            ],
+            'branding' => fn (): array => $this->brandingResolver->resolve($this->siteBrandingStore->get()),
             'auth' => [
-                'user' => $request->user(),
+                'user' => fn () => $user === null ? null : [
+                    ...$user->toArray(),
+                    'avatar' => $user->avatarUrl(),
+                ],
+                'abilities' => [
+                    'manage_settings' => $user?->can(Permission::ManageSettings->value) ?? false,
+                ],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

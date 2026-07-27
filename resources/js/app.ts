@@ -2,24 +2,29 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const fallbackAppName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+function toAppName(value: unknown): string {
+    return typeof value === 'string' && value !== '' ? value : fallbackAppName;
+}
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    // Read the shared site name from the live page on every title render so
+    // the suffix reflects an updated name immediately, even on the same visit
+    // that saved it (e.g. after updating General Settings).
+    title: (title, page) => {
+        const appName = toAppName(page?.props?.name);
+
+        return title ? `${title} - ${appName}` : appName;
+    },
     layout: (name) => {
-        switch (true) {
-            case name === 'Welcome':
-                return null;
-            case name.startsWith('auth/'):
-                return AuthLayout;
-            case name.startsWith('settings/'):
-                return [AppLayout, SettingsLayout];
-            default:
-                return AppLayout;
+        if (name.startsWith('auth/')) {
+            return AuthLayout;
         }
+
+        return AppLayout;
     },
     progress: {
         color: '#4B5563',

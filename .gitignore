@@ -22,8 +22,13 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 /auth.json
+/lang/*.json
 /.fleet
 /.idea
 /.nova
 /.vscode
 /.zed
+/tests/Browser/Screenshots
+/tests/Browser/Console
+/.playwright-cli/
+__pycache__/

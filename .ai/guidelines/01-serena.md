@@ -1,0 +1,260 @@
+# Serena MCP
+
+The Serena MCP server provides semantic code navigation, reference analysis, precise symbol editing, and durable project instructions shared across AI agents.
+
+All participating AI providers connect to the same Serena project. This provides shared repository intelligence and durable context, but it does **not** provide file locking, symbol locking, branch locking, task ownership, or concurrency control.
+
+This file is the single source of truth for Serena usage, fixed-point discipline, memory rules, and the canonical pre-flight evidence block. Other guidelines reference these sections instead of duplicating them.
+
+## Session Start — Mandatory First Actions
+
+Before any Bash, Read, grep, repository search, file operation, or code modification, call these two Serena tools in this exact order:
+
+1. `activate_project` — activate the current repository in Serena.
+2. `initial_instructions` — read the project instruction manual.
+
+Only these two calls are allowed before initialization completes, with one narrow exception: immediately before `activate_project`, run the read-only baseline check `git status --porcelain=v1 .serena/project.yml` so config drift caused by activation can be told apart from a pre-existing developer change. No other Git or file operation may precede initialization.
+
+Starting repository work without completing both calls is a workflow violation, even when the requested change appears trivial.
+
+### Precedence with skill frameworks
+
+Serena initialization always comes first. Immediately after both calls complete — and before any other exploration or modification — invoke the skills relevant to the task (process skills such as `brainstorming` or `systematic-debugging` first, then domain skills). A skill framework's "invoke a skill before any action" rule applies to everything **except** the two Serena initialization calls above. This ordering resolves the conflict; neither rule is waived.
+
+### Activation must match the worktree
+
+After `activate_project`, verify that the activated project root equals the current checkout (`git rev-parse --show-toplevel`). In multi-worktree parallel work, each writer activates its own worktree path — never the shared main checkout — otherwise Serena edits files outside the writer's branch.
+
+After activation, compare `.serena/project.yml` against the pre-activation baseline:
+
+* **clean before, modified after** — the change is Serena-generated config drift (typically after a Serena version change): report it to the developer and commit or discard it as its own change before task work; never bundle it into an unrelated diff;
+* **already dirty before activation** — the change belongs to the developer: leave it untouched and mention it in the pre-flight evidence.
+
+Config drift does not block read-only work; it is a stop condition only for a writer about to commit while the drift is still mixed into the task diff.
+
+After initialization, read-only exploration may begin. Before the first file or code modification, post the canonical pre-flight block below.
+
+## Pre-Flight Evidence — Canonical Block
+
+This is the single canonical pre-flight block for all agents and all guidelines. Do not maintain divergent copies.
+
+```text
+---
+Pre-flight:
+- Role: orchestrator|writer|scout|reviewer
+- Provider:
+- Classification: Routine|Standard|Deep
+- Fixed point: <commit-sha>
+- Branch/worktree:
+- Write access: yes|no
+- Owned files or symbols:
+- Serena: activated, initial instructions read
+- Memories read: <names> or none
+- Skills: <names> or none
+- Docs: Boost <queries> | Context7 <libraries> | not needed
+- Runtime inspection: database schema | database query | browser logs | none
+- UI components checked: yes | no UI involved
+- Ownership conflicts: none|blocked
+---
+```
+
+Rules:
+
+* scouts and reviewers use the same block and must declare `Write access: no`;
+* the block must reflect actual tool use — do not mark a tool as used before calling it;
+* if the task has no assigned role, fixed point, or ownership boundary yet, remain read-only until the orchestrator defines them.
+
+## Shared Serena Is Not a Concurrency Lock
+
+Multiple agents may use the same Serena MCP project concurrently for read-only work: exploring symbols, tracing references, locating implementations, inspecting patterns and tests, reviewing code, researching architecture, and reading project memories.
+
+Sharing Serena does not make concurrent writes safe. Serena does not prevent two agents from editing the same file or symbol, creating conflicting migrations, changing the same route, modifying shared configuration, overwriting generated files, or updating the same memory with incompatible information.
+
+Therefore:
+
+1. Only one writer may modify a branch or worktree at a time.
+2. Parallel writers must use separate Git branches and separate worktrees.
+3. Parallel writers must have explicit, non-overlapping file or symbol ownership.
+4. Agents without assigned write ownership must remain read-only.
+5. When ownership overlaps or is unclear, stop and return control to the orchestrator.
+6. Serena must never be treated as a replacement for Git branches, worktrees, diffs, or integration review.
+
+## Fixed-Point Discipline
+
+Before parallel agents begin, the orchestrator must declare the Git commit SHA used as the shared fixed point. Every agent reports it in the canonical pre-flight block above.
+
+An agent must stop before writing when:
+
+* its checkout does not match the declared fixed point;
+* another agent has changed an owned dependency;
+* its assigned files overlap another writer's ownership;
+* integration has advanced beyond its fixed point;
+* the repository contains unrelated uncommitted changes.
+
+Read-only scouts and reviewers may continue after the fixed point changes only when the orchestrator explicitly asks them to review the newer revision.
+
+## Code Navigation — Serena First
+
+Use Serena's semantic tools for code exploration and refactoring whenever a symbolic operation covers the need.
+
+Do not use `grep`, `Bash cat`, or broad full-file reads as the default method for understanding code.
+
+| Need                                                | Use                                                  |
+| --------------------------------------------------- | ---------------------------------------------------- |
+| Understand a class or file structure                | `get_symbols_overview` or `find_symbol` with `depth` |
+| Find all callers of a function                      | `find_referencing_symbols`                           |
+| Find a specific symbol                              | `find_symbol`                                        |
+| Find implementations of an interface or abstraction | `find_implementations`                               |
+| Search for a code or text pattern                   | `search_for_pattern`                                 |
+| Replace a method or symbol body                     | `replace_symbol_body`                                |
+| Insert code near a symbol                           | `insert_before_symbol` or `insert_after_symbol`      |
+| Rename a symbol safely                              | `rename_symbol`, followed by reference verification  |
+
+### Concrete examples
+
+```text
+❌ grep -rn "AppearanceTabs" resources/js
+✅ mcp__serena__find_referencing_symbols("AppearanceTabs")
+
+❌ Read an entire large file to locate one method
+✅ mcp__serena__find_symbol("methodName", include_body=true)
+
+❌ grep for an interface name to guess its implementations
+✅ mcp__serena__find_implementations("SomeInterface")
+```
+
+## Read-Only and Write Operations
+
+### Read-only agents
+
+Orchestrators, scouts, and reviewers may inspect symbols, trace references, search patterns, inspect memories, analyze architecture, and report findings.
+
+They must not call write-capable Serena operations unless the orchestrator explicitly reassigns them as the writer.
+
+### Writers
+
+A writer may use precise Serena editing only inside its declared ownership boundary.
+
+Before every edit, verify:
+
+* the symbol belongs to the writer;
+* no other writer owns the file;
+* the current branch or worktree is correct;
+* the current code still matches the expected fixed point;
+* the edit does not silently expand the assigned scope.
+
+A writer must stop when an edit requires changing files owned by another agent. Return the dependency to the orchestrator instead of crossing the boundary because it appears convenient.
+
+## Full-File Read Exceptions
+
+A complete file read is acceptable when:
+
+* the file is approximately 100 lines or fewer;
+* the file is non-code, such as configuration, documentation, or `.env.example`;
+* the complete file is required to understand an inseparable flow;
+* the file is a test whose full scenario must be inspected;
+* Serena cannot parse the language or file type adequately.
+
+Even under these exceptions:
+
+* do not repeatedly read a file already read in full during the same session;
+* do not read multiple large files when symbol-level inspection is sufficient;
+* do not rewrite an entire file when a precise symbol edit is safer;
+* do not use full-file replacement to bypass ownership boundaries.
+
+## Serena Memory Rules
+
+Serena memories are durable project knowledge, not temporary task coordination.
+
+Memories may contain:
+
+* architectural decisions and their rationale;
+* domain invariants not obvious from source code;
+* repository conventions;
+* branching, release, or deployment procedures;
+* durable tooling decisions;
+* recurring operational constraints.
+
+Memories must not contain:
+
+* temporary task progress;
+* speculative ideas;
+* unresolved review findings;
+* full code snippets;
+* generic framework documentation;
+* information easily rediscovered from source code;
+* secrets, tokens, credentials, or personal data;
+* parallel-agent ownership status that becomes stale after the task.
+
+Only the orchestrator or an explicitly assigned memory owner may create, update, rename, or delete shared memories.
+
+Before changing a memory:
+
+1. read the existing memory;
+2. confirm the decision is durable;
+3. avoid duplicating another memory;
+4. write the rationale, not merely the implementation;
+5. report the memory name in the task handoff.
+
+Do not use Serena memory as a chat channel between parallel agents. Use the task packet, GitHub issue, pull request, or structured handoff for task-local coordination.
+
+## Refactoring Safety
+
+Before a symbolic refactor:
+
+1. locate the target symbol;
+2. inspect its references;
+3. inspect relevant tests;
+4. verify ownership;
+5. make the smallest precise edit;
+6. inspect references again;
+7. run the smallest relevant test;
+8. report affected symbols to the integrator.
+
+For cross-cutting renames or interface changes, one writer must own the complete refactor unless the orchestrator has explicitly partitioned non-overlapping callers.
+
+Generated files, route helpers, dependency manifests, migrations, and shared type definitions must have a single designated owner.
+
+Confidence is not evidence. Claims such as "the change should be safe" must be supported by reference inspection, tests, or both.
+
+## Fallback — Serena MCP Unavailable
+
+If Serena is unavailable:
+
+1. state the failure explicitly in the pre-flight evidence;
+2. remain read-only until role and ownership are confirmed;
+3. use targeted repository search or ripgrep as the fallback;
+4. read only the files and sections required;
+5. use Git diff and reference searches to compensate for missing symbolic analysis;
+6. do not perform broad or cross-cutting refactors without Serena unless the developer explicitly approves the degraded workflow.
+
+Fallback example:
+
+```text
+Serena: unavailable
+Fallback:
+- Navigation: targeted ripgrep and focused file reads
+- Write ownership: <declared areas>
+- Refactor limitation: no cross-cutting symbolic rename
+- Risk accepted by: <developer or orchestrator>
+```
+
+Do not silently fall back and continue as though Serena had been used.
+
+## Stop Conditions
+
+Stop and report to the orchestrator when:
+
+* Serena initialization fails;
+* the activated Serena project root does not match the writer's current worktree;
+* activation modified `.serena/project.yml` relative to the pre-activation baseline and the drift has not yet been separated from the task diff;
+* the declared fixed point does not match the checkout;
+* another writer owns the required file or symbol;
+* the edit crosses an ownership boundary;
+* two memories contain conflicting project decisions;
+* repository state changed during analysis;
+* the required refactor cannot be performed safely with available tools;
+* the requested task depends on unresolved work from another agent;
+* an agent appears to be modifying the same area concurrently.
+
+The orchestrator must resolve the conflict, reassign ownership, or establish a new fixed point before work continues.

@@ -6,15 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTrans } from '@/composables/useTrans';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
-        title: 'Forgot password',
-        description: 'Enter your email to receive a password reset link',
+        title: 'auth.forgot_password.card.heading',
+        description: 'auth.forgot_password.card.description',
     },
 });
+
+const { trans } = useTrans();
 
 defineProps<{
     status?: string;
@@ -22,7 +26,7 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Forgot password" />
+    <Head :title="trans('auth.forgot_password.title')" />
 
     <div
         v-if="status"
@@ -34,14 +38,18 @@ defineProps<{
     <div class="space-y-6">
         <Form v-bind="email.form()" v-slot="{ errors, processing }">
             <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+                <Label for="email">{{
+                    trans('auth.forgot_password.label.email')
+                }}</Label>
                 <Input
                     id="email"
                     type="email"
                     name="email"
                     autocomplete="off"
                     autofocus
-                    placeholder="email@example.com"
+                    :placeholder="
+                        trans('auth.forgot_password.placeholder.email')
+                    "
                 />
                 <InputError :message="errors.email" />
             </div>
@@ -53,14 +61,16 @@ defineProps<{
                     data-test="email-password-reset-link-button"
                 >
                     <Spinner v-if="processing" />
-                    Email password reset link
+                    {{ trans('auth.forgot_password.action.submit') }}
                 </Button>
             </div>
         </Form>
 
         <div class="space-x-1 text-center text-sm text-muted-foreground">
-            <span>Or, return to</span>
-            <TextLink :href="login()">log in</TextLink>
+            <span>{{ trans('auth.forgot_password.prompt') }}</span>
+            <TextLink :href="login()">{{
+                trans('auth.forgot_password.link.login')
+            }}</TextLink>
         </div>
     </div>
 </template>

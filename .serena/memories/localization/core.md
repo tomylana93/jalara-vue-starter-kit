@@ -1,0 +1,12 @@
+# Localization Core
+- Human-edited source of truth: `lang/{locale}/*.php`; supported global locales are `en` and `id`, with `en` canonical.
+- Runtime locale is global: `GeneralSettings.site_locale` -> `SetApplicationLocale` -> Laravel locale -> shared Inertia `locale` prop. No per-user/session/browser locale.
+- Backend-owned presentation messages use Laravel semantic keys via `__()` / `trans_choice()`; Vue-owned copy uses the frontend localization module. Internal exceptions, logs, and Artisan output remain English diagnostics.
+- Frontend public interface: typed `trans`, `transChoice`, `useTrans`, and safe named-slot `TranslatedText`; never render translated HTML with `v-html`.
+- `php artisan lang:export --no-interaction` validates en/id key parity, string leaves, placeholder parity, and plural forms before atomically producing ignored `lang/{locale}.json` plus tracked `resources/js/types/translation.generated.ts`.
+- Translation keys are semantic feature paths. Breadcrumb and auth-layout key boundaries use generated `TranslationKey`; do not bypass typing with casts. Every key change includes both locales.
+- Frontend catalogs are eagerly bundled for en/id. Runtime falls back to en, then the raw key as last-resort production safety; validation and generated typing must make raw-key fallback unreachable in committed callers.
+- Localization scope includes all application-owned user-facing PHP and `resources/js` copy, including accessibility and composable error text. Exact exclusions: `resources/js/components/ui/**`, internal diagnostics, logs, and CLI.
+- Enforcement: local ESLint `local/no-untranslated-copy` covers Vue template presentation copy, script presentation properties, and user-visible TypeScript error sinks; narrow exceptions require a documented inline `localization-ignore:` reason. Pest backend presentation architecture tests cover sentence keys, flash/status/error payloads, validation sinks, and notification/mail copy.
+- Required checks: `php artisan lang:export --no-interaction` (twice for stability when changing catalogs), `pnpm run test:frontend`, localization feature/browser tests, and `composer run agent:gate`. Browser tests must use built assets when no Vite server is running; a stale `public/hot` points Laravel at an unavailable dev server.
+- Design and rollout rationale: `docs/superpowers/specs/2026-07-16-centralized-localization-design.md` and `docs/superpowers/plans/2026-07-16-centralized-localization.md`.

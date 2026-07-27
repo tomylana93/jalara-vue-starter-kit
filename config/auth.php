@@ -114,4 +114,21 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Login Security
+    |--------------------------------------------------------------------------
+    |
+    | These options control automatic suspension of active users after too
+    | many incorrect password attempts. When the failed-attempt counter
+    | reaches the configured threshold, the user is suspended for the
+    | configured number of minutes before they may attempt to log in again.
+    |
+    */
+
+    'login_security' => [
+        'max_failed_attempts' => env('AUTH_LOGIN_MAX_FAILED_ATTEMPTS', 5),
+        'suspension_minutes' => env('AUTH_LOGIN_SUSPENSION_MINUTES', 15),
+    ],
+
 ];

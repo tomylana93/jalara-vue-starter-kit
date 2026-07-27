@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import AppBrand from '@/components/AppBrand.vue';
+import { useTrans } from '@/composables/useTrans';
 import { home } from '@/routes';
 
+import type { TranslationKey } from '@/types/translation.generated';
+
 const page = usePage();
-const name = page.props.name;
 
 defineProps<{
-    title?: string;
-    description?: string;
+    title?: TranslationKey;
+    description?: TranslationKey;
 }>();
+
+const { trans } = useTrans();
 </script>
 
 <template>
@@ -19,13 +23,22 @@ defineProps<{
         <div
             class="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r"
         >
-            <div class="absolute inset-0 bg-zinc-900" />
+            <div
+                v-if="page.props.branding.auth_split_background"
+                class="absolute inset-0 bg-cover bg-center"
+                :style="{
+                    backgroundImage: `url(${page.props.branding.auth_split_background})`,
+                }"
+            />
+            <div class="absolute inset-0 bg-zinc-900/65" />
             <Link
                 :href="home()"
                 class="relative z-20 flex items-center text-lg font-medium"
             >
-                <AppLogoIcon class="mr-2 size-8 fill-current text-white" />
-                {{ name }}
+                <AppBrand
+                    image-class="h-10 w-auto"
+                    name-class="text-lg font-semibold text-white"
+                />
             </Link>
         </div>
         <div class="lg:p-8">
@@ -34,10 +47,10 @@ defineProps<{
             >
                 <div class="flex flex-col space-y-2 text-center">
                     <h1 class="text-xl font-medium tracking-tight" v-if="title">
-                        {{ title }}
+                        {{ trans(title) }}
                     </h1>
                     <p class="text-sm text-muted-foreground" v-if="description">
-                        {{ description }}
+                        {{ trans(description) }}
                     </p>
                 </div>
                 <slot />

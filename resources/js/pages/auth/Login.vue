@@ -9,15 +9,19 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTrans } from '@/composables/useTrans';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
 defineOptions({
+    inheritAttrs: false,
     layout: {
-        title: 'Log in to your account',
-        description: 'Enter your email and password below to log in',
+        title: 'auth.login.card.heading',
+        description: 'auth.login.card.description',
     },
 });
+
+const { trans } = useTrans();
 
 defineProps<{
     status?: string;
@@ -26,7 +30,7 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Log in" />
+    <Head :title="trans('auth.login.title')" />
 
     <div
         v-if="status"
@@ -45,59 +49,55 @@ defineProps<{
     >
         <div class="grid gap-6">
             <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+                <Label for="email">{{ trans('auth.login.label.email') }}</Label>
                 <Input
                     id="email"
                     type="email"
                     name="email"
-                    required
                     autofocus
-                    :tabindex="1"
                     autocomplete="email"
-                    placeholder="email@example.com"
+                    :placeholder="trans('auth.login.placeholder.email')"
                 />
                 <InputError :message="errors.email" />
             </div>
 
             <div class="grid gap-2">
                 <div class="flex items-center justify-between">
-                    <Label for="password">Password</Label>
+                    <Label for="password">{{
+                        trans('auth.login.label.password')
+                    }}</Label>
                     <TextLink
                         v-if="canResetPassword"
                         :href="request()"
                         class="text-sm"
-                        :tabindex="5"
                     >
-                        Forgot your password?
+                        {{ trans('auth.login.link.forgot') }}
                     </TextLink>
                 </div>
                 <PasswordInput
                     id="password"
                     name="password"
-                    required
-                    :tabindex="2"
                     autocomplete="current-password"
-                    placeholder="Password"
+                    :placeholder="trans('auth.login.placeholder.password')"
                 />
                 <InputError :message="errors.password" />
             </div>
 
             <div class="flex items-center justify-between">
                 <Label for="remember" class="flex items-center space-x-3">
-                    <Checkbox id="remember" name="remember" :tabindex="3" />
-                    <span>Remember me</span>
+                    <Checkbox id="remember" name="remember" />
+                    <span>{{ trans('auth.login.label.remember') }}</span>
                 </Label>
             </div>
 
             <Button
                 type="submit"
                 class="mt-4 w-full"
-                :tabindex="4"
                 :disabled="processing"
                 data-test="login-button"
             >
                 <Spinner v-if="processing" />
-                Log in
+                {{ trans('auth.login.action.submit') }}
             </Button>
         </div>
     </Form>
