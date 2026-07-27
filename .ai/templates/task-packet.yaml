@@ -1,0 +1,57 @@
+schema_version: 1
+
+task:
+  id: ""
+  title: ""
+  classification: Routine|Standard|Deep
+  workflow_status: PLANNED
+
+repository:
+  fixed_point: ""
+  expected_head: ""
+  base_branch: "dev"
+  task_branch: ""
+  worktree: ""
+
+objective:
+  goal: ""
+  acceptance_criteria: []
+  non_goals: []
+
+assignment:
+  role: orchestrator|writer|scout|reviewer|integrator
+  provider: ""
+  cli: ""
+  write_access: false
+  required_skills: []
+  required_mcp:
+    - serena
+  ownership:
+    include: []
+    exclude: []
+  instructions: []
+
+checks:
+  targeted: []
+  final_gate:
+    - composer run agent:gate
+
+approvals:
+  required: []
+  received: []
+
+limits:
+  review_cycles: 2
+  debugging_attempts_per_failure: 3
+  architecture_replans: 1
+
+stop_conditions:
+  - Serena MCP is unavailable for write work and degraded operation is not explicitly approved.
+  - The fixed point or expected HEAD cannot be verified.
+  - The worktree contains unrelated changes.
+  - Required work crosses the ownership boundary.
+  - A material architecture, dependency, authentication, authorization, or public-contract decision lacks approval.
+
+output_contract:
+  type: ""
+  next_role: ""
