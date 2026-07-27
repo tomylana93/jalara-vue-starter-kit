@@ -32,3 +32,7 @@ yarn-error.log
 /tests/Browser/Console
 /.playwright-cli/
 __pycache__/
+
+# Temporary task-local AI packets and handoffs
+/.ai/runs/*
+!/.ai/runs/README.md
