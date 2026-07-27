@@ -1,6 +1,13 @@
 packages:
   - '.'
 
+# vue-input-otp@0.3.2 pins @vueuse/core ^12 while reka-ui requires ^14,
+# which would ship two copies of VueUse. All five APIs vue-input-otp uses
+# (defaultDocument, defaultWindow, reactiveOmit, useEventListener,
+# usePrevious) still exist in v14, so force a single deduplicated version.
+overrides:
+  '@vueuse/core': ^14.3.0
+
 allowBuilds:
   unrs-resolver: true
   vue-demi: true

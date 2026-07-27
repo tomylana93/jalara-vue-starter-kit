@@ -143,6 +143,16 @@ const pages = [
             requiresConfirmation: true,
         },
     },
+    {
+        // Renders InputOTP, the only consumer of vue-input-otp. That package
+        // pins @vueuse/core ^12 and is forced onto v14 by the workspace
+        // override, so keep it under SSR smoke to catch a broken VueUse API.
+        component: 'auth/TwoFactorChallenge',
+        url: '/two-factor-challenge',
+        props: {
+            ...shared(null),
+        },
+    },
 ];
 
 const BROWSER_GLOBAL =
