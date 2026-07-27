@@ -1,0 +1,14 @@
+schema_version: 1
+
+task_id: ""
+review_handoff_id: ""
+
+resolutions:
+  - finding_id: REV-001
+    decision: accepted|rejected|deferred
+    rationale: ""
+    files_changed: []
+    tests_added_or_updated: []
+    verification: []
+    residual_risk: ""
+    human_approval: null

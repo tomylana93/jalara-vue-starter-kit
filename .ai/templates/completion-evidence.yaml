@@ -1,0 +1,50 @@
+schema_version: 1
+
+handoff:
+  id: ""
+  task_id: ""
+  source_role: ""
+  source_provider: ""
+  target_role: ""
+  target_provider: ""
+  workflow_status: ""
+
+git:
+  fixed_point: ""
+  starting_commit: ""
+  final_commit: ""
+  branch: ""
+  worktree: ""
+  diff_range: ""
+  repository_clean: false
+
+serena:
+  status: used|unavailable
+  operations: []
+  fallback_evidence: null
+
+execution:
+  scope_completed: []
+  files_changed: []
+  symbols_inspected: []
+  symbols_modified: []
+  references_verified: []
+
+verification:
+  tests_added_or_updated: []
+  commands_run: []
+  checks_passed: []
+  checks_failed: []
+  checks_not_run: []
+
+decisions: []
+assumptions: []
+known_risks: []
+unresolved_issues: []
+
+ownership:
+  respected: false
+  exceptions: []
+
+serena_memories_changed: []
+human_approval_required: []
