@@ -1,0 +1,35 @@
+schema_version: 1
+
+review:
+  task_id: ""
+  handoff_id: ""
+  reviewer: ""
+  provider: ""
+  reviewed_base: ""
+  reviewed_head: ""
+  diff_range: ""
+  decision: APPROVE|APPROVE_WITH_NON_BLOCKING_FINDINGS|REQUEST_CHANGES|BLOCKED
+
+serena:
+  status: used|unavailable
+  operations: []
+  fallback_evidence: null
+
+findings:
+  - id: REV-001
+    severity: P0|P1|P2|P3
+    blocking: true
+    category: ""
+    requirement: ""
+    file: ""
+    symbol: ""
+    evidence: ""
+    impact: ""
+    recommended_resolution: ""
+
+missing_tests: []
+residual_risks: []
+
+next_assignment:
+  role: writer|integrator|orchestrator
+  workflow_status: CHANGES_REQUESTED|READY_FOR_INTEGRATION|BLOCKED
